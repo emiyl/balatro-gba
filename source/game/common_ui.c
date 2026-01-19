@@ -175,7 +175,7 @@ void display_mult(void)
 
 void display_ante(int value)
 {
-    consoleSetCursor(&topScreen, ANTE_TEXT_RECT.left, ANTE_TEXT_RECT.top);
+    consoleSetCursor(&topScreen, ANTE_TEXT_RECT.left / 8, ANTE_TEXT_RECT.top / 8);
     consoleSetColor(&topScreen, TTE_YELLOW_PB);
     consoleSelect(&topScreen);
     printf("%d", value);

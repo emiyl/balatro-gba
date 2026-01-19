@@ -51,6 +51,9 @@
 /** @def NUM_PALETTES */
 #define NUM_PALETTES 16
 
+/** @def MAP_WIDTH */
+#define MAP_WIDTH 32
+
 /**
  * @def TILE_SIZE
  * @brief Tile size in pixels, both height and width as tiles are square
@@ -204,7 +207,7 @@ INLINE int rect_height(const Rect* rect)
  *
  * @param direction must be either @ref SE_UP or @ref SE_DOWN.
  */
-void bg_se_copy_rect_1_tile_vert(u16 bg_sbb, Rect se_rect, enum ScreenVertDir direction);
+void bg_se_copy_rect_1_tile_vert(u16 bg, Rect se_rect, enum ScreenVertDir direction);
 
 /**
  * @brief Clears a rect in the main background.

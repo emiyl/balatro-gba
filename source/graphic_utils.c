@@ -9,7 +9,7 @@ const Rect FULL_SCREENBLOCK_RECT = {0, 0, SE_ROW_LEN - 1, SE_COL_LEN - 1};
 
 static void clip_se_rect_to_screenblock(Rect* rect);
 static void bg_se_copy_or_move_rect_1_tile_vert(
-    u16 bg_sbb,
+    u16 bg,
     Rect se_rect,
     enum ScreenVertDir direction,
     bool move
@@ -59,7 +59,7 @@ static inline void clip_se_rect_within_step_of_full_screen_vert(
 
 // Internal static function to merge implementation of move/copy functions.
 static void bg_se_copy_or_move_rect_1_tile_vert(
-    u16 bg_sbb,
+    u16 bg,
     Rect se_rect,
     enum ScreenVertDir direction,
     bool move
@@ -76,38 +76,41 @@ static void bg_se_copy_or_move_rect_1_tile_vert(
     int start = (direction == SCREEN_UP) ? se_rect.top : se_rect.bottom;
     int end = (direction == SCREEN_UP) ? se_rect.bottom : se_rect.top;
 
+    u16* map = bgGetMapPtr(bg);
+
     for (int y = start; y != end - direction; y -= direction)
     {
-        memcpy16(
-            &(se_mat[bg_sbb][y + direction][se_rect.left]),
-            &se_mat[bg_sbb][y][se_rect.left],
-            rect_width(&se_rect)
-        );
+        u16* dst = &map[(y + direction) * MAP_WIDTH + se_rect.left];
+        u16* src = &map[y * MAP_WIDTH + se_rect.left];
+
+        memcpy16(dst, src, rect_width(&se_rect));
     }
 
     if (move)
     {
-        memset16(&se_mat[bg_sbb][end][se_rect.left], 0x0000, rect_width(&se_rect));
+        u16* clear = &map[end * MAP_WIDTH + se_rect.left];
+        memset16(clear, 0x0000, rect_width(&se_rect));
     }
 }
 
+extern int bg_1;
 static void main_bg_se_copy_or_move_rect_1_tile_vert(
     Rect se_rect,
     enum ScreenVertDir direction,
     bool move
 )
 {
-    bg_se_copy_or_move_rect_1_tile_vert(MAIN_BG_SBB, se_rect, direction, move);
+    bg_se_copy_or_move_rect_1_tile_vert(bg_1, se_rect, direction, move);
 }
 
-void bg_se_copy_rect_1_tile_vert(u16 bg_sbb, Rect se_rect, enum ScreenVertDir direction)
+void bg_se_copy_rect_1_tile_vert(u16 bg, Rect se_rect, enum ScreenVertDir direction)
 {
-    bg_se_copy_or_move_rect_1_tile_vert(MAIN_BG_SBB, se_rect, direction, false);
+    bg_se_copy_or_move_rect_1_tile_vert(bg, se_rect, direction, false);
 }
 
-void bg_se_move_rect_1_tile_vert(u16 bg_sbb, Rect se_rect, enum ScreenVertDir direction)
+void bg_se_move_rect_1_tile_vert(u16 bg, Rect se_rect, enum ScreenVertDir direction)
 {
-    bg_se_copy_or_move_rect_1_tile_vert(MAIN_BG_SBB, se_rect, direction, true);
+    bg_se_copy_or_move_rect_1_tile_vert(bg, se_rect, direction, true);
 }
 
 void main_bg_se_copy_rect_1_tile_vert(Rect se_rect, enum ScreenVertDir direction)
@@ -132,17 +135,23 @@ void main_bg_se_copy_rect(Rect se_rect, BG_POINT dest_pos)
     int height = rect_height(&se_rect);
     SE tile_map[height][width];
 
+    u16* map = bgGetMapPtr(bg_1);
+
     // Copy the rect to the tile map
     for (int sy = 0; sy < height; sy++)
     {
-        memcpy16(&tile_map[sy][0], &se_mat[MAIN_BG_SBB][se_rect.top + sy][se_rect.left], width);
+        u16* src = &map[(se_rect.top + sy) * MAP_WIDTH + se_rect.left];
+
+        memcpy16(&tile_map[sy][0], src, width);
     }
 
     // TODO: Avoid overflow
     // Copy the tilemap to the new rect position
     for (int sy = 0; sy < height; sy++)
     {
-        memcpy16(&se_mat[MAIN_BG_SBB][dest_pos.y + sy][dest_pos.x], &tile_map[sy][0], width);
+        u16* dst = &map[(dest_pos.y + sy) * MAP_WIDTH + dest_pos.x];
+
+        memcpy16(dst, &tile_map[sy][0], width);
     }
 }
 
@@ -376,9 +385,13 @@ void main_bg_se_clear_rect(Rect se_rect)
     // Clip to avoid screenblock overflow
     clip_se_rect_to_screenblock(&se_rect);
 
+    u16* map = bgGetMapPtr(bg_1);
+    int width = rect_width(&se_rect);
+
     for (int y = se_rect.top; y < se_rect.bottom; y++)
     {
-        memset16(&(se_mat[MAIN_BG_SBB][y][se_rect.left]), 0x0000, rect_width(&se_rect));
+        u16* row = &map[y * MAP_WIDTH + se_rect.left];
+        memset16(row, 0x0000, width);
     }
 }
 
