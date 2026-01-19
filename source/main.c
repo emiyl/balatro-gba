@@ -97,6 +97,10 @@ void init()
 
     // Initialize subsystems
     mmInitDefault((mm_addr)soundbank_bin);
+
+    // Initialize NDS input system
+    keysSetRepeat(25, 10);
+
     affine_background_init();
     sprite_init(&oamMain);
     sprite_init(&oamSub);

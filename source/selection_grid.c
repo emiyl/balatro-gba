@@ -4,7 +4,12 @@
 
 static void selection_grid_process_directional_input(SelectionGrid* selection_grid, void* ctx)
 {
-    int horz_tri_input = bit_tribool(KEY_ANY, KI_RIGHT, KI_LEFT);
+    u32 keys_down = keysDown();
+
+    // Calculate horizontal input: +1 for right, -1 for left, 0 for neither/both
+    int has_right = (keys_down & KI_RIGHT) ? 1 : 0;
+    int has_left = (keys_down & KI_LEFT) ? 1 : 0;
+    int horz_tri_input = has_right - has_left;
 
     if (horz_tri_input != 0)
     {
@@ -15,7 +20,10 @@ static void selection_grid_process_directional_input(SelectionGrid* selection_gr
         return;
     }
 
-    int vert_tri_input = bit_tribool(KEY_ANY, KI_DOWN, KI_UP);
+    // Calculate vertical input: +1 for down, -1 for up, 0 for neither/both
+    int has_down = (keys_down & KI_DOWN) ? 1 : 0;
+    int has_up = (keys_down & KI_UP) ? 1 : 0;
+    int vert_tri_input = has_down - has_up;
 
     if (vert_tri_input != 0)
     {
@@ -132,6 +140,9 @@ void selection_grid_process_input(SelectionGrid* selection_grid, void* ctx)
     {
         // To make the next line shorter and more readable
         Selection* selection = &selection_grid->selection;
-        selection_grid->rows[selection->y].on_key_transit(selection_grid, selection, ctx);
+        if (selection->y >= 0 && selection->y < selection_grid->num_rows)
+        {
+            selection_grid->rows[selection->y].on_key_transit(selection_grid, selection, ctx);
+        }
     }
 }
