@@ -164,13 +164,13 @@ JokerObject* joker_object_new(Joker* joker)
     sprite_object_set_sprite(
         joker_object->sprite_object,
         sprite_new(
-            JOKER_STARTING_LAYER + layer,
+            tile_index,
             &oamMain,
             0,
             0,
             SpriteSize_32x32,
             SpriteColorFormat_16Color,
-            tile_index,
+            JOKER_STARTING_LAYER + layer,
             true,
             joker_pb,
             joker_gfx
