@@ -7,7 +7,7 @@
 #ifndef SPLASH_SCREEN_H
 #define SPLASH_SCREEN_H
 
-#include <tonc.h>
+#include <nds.h>
 
 /** @name Splash screen timing variables
  *

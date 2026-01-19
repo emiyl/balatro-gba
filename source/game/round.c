@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <tonc.h>
+#include <nds.h>
 #include <tonc_memdef.h>
 
 // Sound pitch steps for SFX

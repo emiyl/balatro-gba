@@ -15,9 +15,6 @@
 #ifndef GRAPHIC_UTILS_H
 #define GRAPHIC_UTILS_H
 
-#include <tonc_math.h>
-#include <tonc_video.h>
-
 /**
  * @name Graphics Utilities Constants
  *

@@ -13,8 +13,8 @@
 #include "sprite.h"
 #include "util.h"
 
+#include <nds.h>
 #include <stdint.h>
-#include <tonc.h>
 #include <tonc_math.h>
 #include <tonc_memdef.h>
 

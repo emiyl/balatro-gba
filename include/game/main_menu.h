@@ -1,7 +1,7 @@
 #ifndef GAME_MAIN_MENU_H
 #define GAME_MAIN_MENU_H
 
-#include <tonc.h>
+#include <nds.h>
 
 typedef struct
 {

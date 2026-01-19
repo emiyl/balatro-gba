@@ -4,7 +4,7 @@
 #include "graphic_utils.h"
 #include "sprite.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 enum BackgroundId
 {

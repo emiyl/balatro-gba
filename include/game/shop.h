@@ -5,7 +5,7 @@
 #include "list.h"
 #include "selection_grid.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 typedef struct
 {

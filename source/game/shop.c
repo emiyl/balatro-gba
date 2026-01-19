@@ -22,10 +22,10 @@
 #include "tonc_memdef.h"
 #include "util.h"
 
-#include <maxmod.h>
+#include <maxmod9.h>
+#include <nds.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <tonc.h>
 
 #define ITEM_SHOP_Y 71
 

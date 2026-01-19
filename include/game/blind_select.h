@@ -4,7 +4,7 @@
 #include "blind.h"
 #include "graphic_utils.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 typedef struct
 {

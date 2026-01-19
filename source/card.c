@@ -3,7 +3,7 @@
 #include "deck_gfx.h"
 #include "graphic_utils.h"
 
-#include <maxmod.h>
+#include <maxmod9.h>
 #include <stdlib.h>
 
 // Audio

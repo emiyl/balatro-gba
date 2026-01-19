@@ -3,8 +3,8 @@
 
 #include "sprite.h"
 
-#include <maxmod.h>
-#include <tonc.h>
+#include <maxmod9.h>
+#include <nds.h>
 
 #define MAX_CARDS           (NUM_SUITS * NUM_RANKS)
 #define MAX_CARDS_ON_SCREEN 16

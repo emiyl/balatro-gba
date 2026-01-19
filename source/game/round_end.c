@@ -12,8 +12,8 @@
 #include "tonc_memdef.h"
 #include "util.h"
 
+#include <nds.h>
 #include <stdio.h>
-#include <tonc.h>
 
 #define ROUND_END_REWARD_AMOUNT_X            168
 #define ROUND_END_REWARD_TEXT_X              88

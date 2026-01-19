@@ -1,8 +1,10 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 
-#include <maxmod.h>
-#include <tonc.h>
+#include "nds_compat.h"
+
+#include <maxmod9.h>
+#include <nds.h>
 
 #define CARD_SPRITE_SIZE                  32
 #define MAX_AFFINES                       32

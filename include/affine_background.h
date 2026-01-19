@@ -8,7 +8,7 @@
 
 #include "graphic_utils.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 /**
  * @def AFFINE_BG_IDX

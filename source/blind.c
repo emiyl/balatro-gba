@@ -6,7 +6,7 @@
 #include "small_blind_gfx.h"
 #include "util.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 // Maps the ante number to the base blind requirement for that ante.
 // The game starts at ante 1 which is at index 1 for base requirement 300.

@@ -8,10 +8,10 @@
 #include "soundbank.h"
 #include "util.h"
 
-#include <maxmod.h>
+#include <maxmod9.h>
+#include <nds.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tonc.h>
 
 #define JOKER_SCORE_TEXT_Y         48
 #define HELD_CARD_SCORE_TEXT_Y     108

@@ -9,7 +9,7 @@
 #include "game/round_end.h"
 #include "game/shop.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 enum BackgroundId background = BG_NONE;
 

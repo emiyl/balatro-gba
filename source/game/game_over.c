@@ -16,8 +16,8 @@
 #include "tonc_memdef.h"
 #include "util.h"
 
-#include <maxmod.h>
-#include <tonc.h>
+#include <maxmod9.h>
+#include <nds.h>
 
 #define GAME_OVER_ANIM_FRAMES 15
 

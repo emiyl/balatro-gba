@@ -4,7 +4,7 @@
 #include "bitset.h"
 #include "blind.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 #define MAX_HAND_SIZE        16
 #define MAX_DECK_SIZE        52

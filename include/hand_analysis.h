@@ -3,7 +3,7 @@
 
 #include "card.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 /**
  * @brief Outputs the distribution of ranks and suits in the hand

@@ -15,7 +15,7 @@
 
 #include "list.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 typedef POINT Selection;
 

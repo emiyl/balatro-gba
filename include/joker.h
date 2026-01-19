@@ -6,7 +6,7 @@
 #include "graphic_utils.h"
 #include "sprite.h"
 
-#include <maxmod.h>
+#include <maxmod9.h>
 
 // This won't be more than the number of jokers in your current deck
 // plus the amount that can fit in the shop, 8 should be fine. For now...

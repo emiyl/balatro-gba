@@ -6,9 +6,9 @@
 #include "soundbank.h"
 #include "util.h"
 
-#include <maxmod.h>
+#include <maxmod9.h>
+#include <nds.h>
 #include <stdlib.h>
-#include <tonc.h>
 #include <tonc_oam.h>
 
 OBJ_ATTR obj_buffer[MAX_SPRITES];

@@ -3,7 +3,7 @@
 #include "audio_utils.h"
 #include "soundbank.h"
 
-#include <tonc.h>
+#include <nds.h>
 
 void button_set_highlight(Button* button, bool highlight)
 {

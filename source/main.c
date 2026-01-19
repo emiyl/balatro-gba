@@ -8,9 +8,9 @@
 #include "joker.h"
 #include "sprite.h"
 
-#include <maxmod.h>
+#include <maxmod9.h>
+#include <nds.h>
 #include <string.h>
-#include <tonc.h>
 
 // Graphics
 #include "affine_background_gfx.h"

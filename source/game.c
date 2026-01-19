@@ -31,7 +31,7 @@
 #include "tonc_memdef.h"
 #include "util.h"
 
-#include <maxmod.h>
+#include <maxmod9.h>
 #include <stdint.h>
 #include <stdlib.h>
 
