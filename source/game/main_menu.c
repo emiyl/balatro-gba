@@ -28,8 +28,8 @@
 #define MENU_POP_OUT_ANIM_FRAMES 20
 
 // Pixel sizes
-#define MAIN_MENU_ACE_T_X 88
-#define MAIN_MENU_ACE_T_Y 26
+#define MAIN_MENU_ACE_T_X 96
+#define MAIN_MENU_ACE_T_Y 42
 
 // Main menu sprite - the ace of spades
 static CardObject* main_menu_ace = NULL;
