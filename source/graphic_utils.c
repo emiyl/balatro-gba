@@ -352,29 +352,29 @@ void toggle_windows(bool win0, bool win1)
 {
     if (win0)
     {
-        windowEnableSub(WINDOW_0);
+        windowEnable(WINDOW_0);
     }
     else
     {
-        windowDisableSub(WINDOW_0);
+        windowDisable(WINDOW_0);
     }
 
     if (win1)
     {
-        windowEnableSub(WINDOW_1);
+        windowEnable(WINDOW_1);
     }
     else
     {
-        windowDisableSub(WINDOW_1);
+        windowDisable(WINDOW_1);
     }
 
     if (win0 || win1)
     {
-        REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
+        REG_BLDCNT = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
     }
     else
     {
-        REG_BLDCNT_SUB = 0;
+        REG_BLDCNT = 0;
     }
 }
 

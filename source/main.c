@@ -75,24 +75,25 @@ void init()
     BG_PALETTE[(TTE_RED_PB * 16) + 1] = TEXT_CLR_RED;
     BG_PALETTE[(TTE_WHITE_PB * 16) + 1] = TEXT_CLR_WHITE;
 
-    windowSetBoundsSub(WINDOW_0, 73, 76, 200, 160);
-    windowSetBoundsSub(WINDOW_1, 88, 0, 248, 44);
+    windowSetBounds(WINDOW_0, 72, 44, 200, 128);
+    windowSetBounds(WINDOW_1, 72, 0, 232, 44);
 
     int eva = 8, evb = 8, evy = 8;
 
-    REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
-    REG_BLDALPHA_SUB = BLDALPHA_EVA(8) | BLDALPHA_EVB(8);
-    REG_BLDY_SUB = evy;
+    REG_BLDCNT = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
+    REG_BLDALPHA = BLDALPHA_EVA(8) | BLDALPHA_EVB(8);
+    REG_BLDY = evy;
 
     // Enable blending in both WINDOW_0 and WINDOW_1
-    REG_WININ_SUB =
+    REG_WININ =
         (0x0F | (1 << 5)) | ((0x0F | (1 << 5)) << 8); // BG0-3 + blend for both win0 and win1
-    REG_WINOUT_SUB = 0x0F;                            // BG0-3 outside windows (no blending)
+    REG_WINOUT = 0x0F;                                // BG0-3 outside windows (no blending)
 
+    bgWindowEnable(bg_0, WINDOW_OUT | WINDOW_0 | WINDOW_1);
     bgWindowEnable(bg_1, WINDOW_OUT | WINDOW_0 | WINDOW_1);
     bgWindowEnable(bg_2, WINDOW_OUT | WINDOW_0 | WINDOW_1);
-    oamWindowEnable(&oamSub, WINDOW_OUT | WINDOW_0 | WINDOW_1);
-    windowEnableSub(WINDOW_OUT | WINDOW_0 | WINDOW_1);
+    oamWindowEnable(&oamMain, WINDOW_OUT | WINDOW_0 | WINDOW_1);
+    windowEnable(WINDOW_OUT | WINDOW_0 | WINDOW_1);
 
     // Initialize subsystems
     mmInitDefault((mm_addr)soundbank_bin);
