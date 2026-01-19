@@ -4,6 +4,7 @@
 
 void play_sfx(mm_word id, mm_word rate, mm_byte volume)
 {
+    return;
     mm_sound_effect sfx = {
         {id},
         rate,

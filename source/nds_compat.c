@@ -162,7 +162,7 @@ void apply_control_block(const char* block, va_list* ap)
             int x = va_arg(*ap, int);
             int y = va_arg(*ap, int);
 
-            consoleSetCursor(&topScreen, x, y);
+            consoleSetCursor(&topScreen, x / 8, y / 8);
 
             // Skip until next separator
             while (*p && *p != ';')
@@ -278,13 +278,15 @@ void tte_erase_rect(int left, int top, int right, int bottom)
 
 void tte_erase_screen(void)
 {
-    RECT full_screen_rect = {0, 0, 256 / 8, 192 / 8};
-    tte_erase_rect(
-        full_screen_rect.left,
-        full_screen_rect.top,
-        full_screen_rect.right - 1,
-        full_screen_rect.bottom - 1
-    );
+    consoleSelect(&topScreen);
+    for (int row = 0; row < 192 / 8; row++)
+    {
+        consoleSetCursor(&topScreen, 0, row);
+        for (int col = 0; col < 256 / 8; col++)
+        {
+            printf(" ");
+        }
+    }
 }
 
 int bit_tribool(u32 flags, uint plus, uint minus)

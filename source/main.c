@@ -21,7 +21,7 @@
 #include "soundbank.h"
 #include "soundbank_bin.h"
 
-PrintConsole topScreen;
+PrintConsole topScreen, bottomScreen;
 const size_t size_char_4bpp = (8 * 8) / 2; // 4bpp = 2 pixels per byte
 ConsoleFont font = {
     .gfx = gbalatro_sys8Tiles,
@@ -68,6 +68,8 @@ void init()
     );
     consoleSetFont(&topScreen, &font);
 
+    consoleInit(&bottomScreen, 0, BgType_Text4bpp, BgSize_T_256x256, 0, 1, false, true);
+
     BG_PALETTE[(TTE_YELLOW_PB * 16) + 1] = TEXT_CLR_YELLOW;
     BG_PALETTE[(TTE_BLUE_PB * 16) + 1] = TEXT_CLR_BLUE;
     BG_PALETTE[(TTE_RED_PB * 16) + 1] = TEXT_CLR_RED;
@@ -100,7 +102,7 @@ void init()
     blind_init();
     joker_init();
     game_init();
-    game_change_state(GAME_STATE_MAIN_MENU);
+    game_change_state(GAME_STATE_SPLASH_SCREEN);
 }
 
 void update()
@@ -112,6 +114,8 @@ void update()
 void draw()
 {
     sprite_draw(&oamMain);
+    oamUpdate(&oamMain);
+    oamUpdate(&oamSub);
 }
 
 int main()

@@ -9,6 +9,7 @@
 #include "game/common_ui.h"
 #include "game/palette.h"
 #include "graphic_utils.h"
+#include "maxmod9.h"
 #include "soundbank.h"
 #include "sprite.h"
 #include "util.h"
@@ -43,10 +44,13 @@ void game_main_menu_on_init(void* _)
     main_menu_ace = card_object_new(card_new(SPADES, ACE));
     card_object_set_sprite(main_menu_ace, 0); // Set the sprite for the ace of spades
     main_menu_ace->sprite_object->sprite->isDoubleSize = true;
-    main_menu_ace->sprite_object->tx = int2fx(MAIN_MENU_ACE_T_X);
-    main_menu_ace->sprite_object->x = main_menu_ace->sprite_object->tx;
-    main_menu_ace->sprite_object->ty = int2fx(MAIN_MENU_ACE_T_Y);
-    main_menu_ace->sprite_object->y = main_menu_ace->sprite_object->ty;
+    main_menu_ace->sprite_object->tx = MAIN_MENU_ACE_T_X;
+    main_menu_ace->sprite_object->ty = MAIN_MENU_ACE_T_Y;
+    sprite_position(
+        main_menu_ace->sprite_object->sprite,
+        main_menu_ace->sprite_object->tx,
+        main_menu_ace->sprite_object->ty
+    );
     main_menu_ace->sprite_object->tscale = float2fx(0.8f);
     selection_x = 0;
 }
@@ -78,7 +82,10 @@ void game_main_menu_on_update(void* ctx)
 
     card_object_update(main_menu_ace);
     main_menu_ace->sprite_object->trotation = sinLerp((props->timer << 8) / 2) / 3;
-    main_menu_ace->sprite_object->rotation = main_menu_ace->sprite_object->trotation;
+    sprite_set_rotation(
+        main_menu_ace->sprite_object->sprite,
+        main_menu_ace->sprite_object->trotation
+    );
 
     // Seed randomization
     props->rng_seed++;

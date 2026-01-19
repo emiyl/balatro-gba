@@ -18,6 +18,8 @@ static enum AffineBackgroundID _background = AFFINE_BG_MAIN_MENU;
 static uint _timer = 0;
 static bool _hblank_enabled = false;
 
+extern int bg_2;
+
 void set_affine_registers(BG_AFFINE bgaff)
 {
     REG_BG2PA = bgaff.pa;
@@ -91,14 +93,17 @@ void affine_background_set_color(COLOR color)
     }
 }
 
+extern int bg_2;
+
 void affine_background_load_palette(const u16* src)
 {
-    memcpy16(&BG_PALETTE[AFFINE_BG_PB], src, AFFINE_BG_PAL_LEN);
+    dmaCopy(src, &BG_PALETTE[AFFINE_BG_PB], affine_main_menu_background_gfxPalLen);
 }
 
 void affine_background_change_background(enum AffineBackgroundID new_bg)
 {
     _background = new_bg;
+    bgWrapOn(bg_2);
 
     switch (_background)
     {
@@ -110,14 +115,14 @@ void affine_background_change_background(enum AffineBackgroundID new_bg)
             _hblank_enabled = true;
 
             memcpy32_tile8_with_palette_offset(
-                (u32*)&tile8_mem[AFFINE_BG_CBB],
+                (u32*)bgGetGfxPtr(bg_2),
                 (const u32*)affine_main_menu_background_gfxTiles,
                 affine_main_menu_background_gfxTilesLen / 4,
                 AFFINE_BG_PB
             );
             dmaCopy(
                 affine_main_menu_background_gfxMap,
-                &se_mem[AFFINE_BG_SBB],
+                bgGetMapPtr(bg_2),
                 affine_main_menu_background_gfxMapLen
             );
             affine_background_load_palette(affine_main_menu_background_gfxPal);
@@ -128,12 +133,12 @@ void affine_background_change_background(enum AffineBackgroundID new_bg)
             _hblank_enabled = false;
 
             memcpy32_tile8_with_palette_offset(
-                (u32*)&tile8_mem[AFFINE_BG_CBB],
+                (u32*)bgGetGfxPtr(bg_2),
                 (const u32*)affine_background_gfxTiles,
                 affine_background_gfxTilesLen / 4,
                 AFFINE_BG_PB
             );
-            dmaCopy(affine_background_gfxMap, &se_mem[AFFINE_BG_SBB], affine_background_gfxMapLen);
+            dmaCopy(affine_background_gfxMap, bgGetMapPtr(bg_2), affine_background_gfxMapLen);
             affine_background_load_palette(affine_background_gfxPal);
             break;
     }

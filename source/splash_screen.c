@@ -9,7 +9,7 @@
 
 #include <nds.h>
 
-static const Rect COUNTDOWN_TIMER_RECT = {208, 144, 240, 152};
+static const Rect COUNTDOWN_TIMER_RECT = {224, 168, 256, 176};
 static uint timer = 0;
 
 extern PrintConsole topScreen;
@@ -17,17 +17,19 @@ void splash_screen_on_init(void* _)
 {
     timer = 0;
 
-    consoleSetCursor(&topScreen, 72 / 8, 8 / 8);
+    BG_PALETTE[0] = 0;
     consoleSelect(&topScreen);
+    consoleSetCursor(&topScreen, 80 / 8, 8 / 8);
+    consoleSetColor(&topScreen, TTE_WHITE_PB);
     printf("DISCLAIMER");
     consoleSetCursor(&topScreen, 8 / 8, 24 / 8);
     printf(
         "This project is NOT endorsed \n by or affiliated with \n Playstack or "
-        "LocalThunk.\n\n If you have paid for this, \n you have been scammed \n and should request "
-        "a refund \n IMMEDIATELY. \n\n The only official place \n to obtain this is from: \n\n "
+        "LocalThunk.\n\n If you have paid for this, \n you have been scammed and \n should request "
+        "a refund \n IMMEDIATELY. \n\n The only official place to \n obtain this is from: \n\n "
         "'github.com/\n  GBALATRO/balatro-gba'"
     );
-    consoleSetCursor(&topScreen, 8 / 8, 144 / 8);
+    consoleSetCursor(&topScreen, 8 / 8, 168 / 8);
     printf("(Press any key to skip)");
 }
 
@@ -53,5 +55,5 @@ void splash_screen_on_update(void* _)
 
 void splash_screen_on_exit(void* _)
 {
-    mmStart(MOD_MAIN_THEME, MM_PLAY_LOOP);
+    // mmStart(MOD_MAIN_THEME, MM_PLAY_LOOP);
 }

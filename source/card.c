@@ -102,15 +102,15 @@ void card_object_set_sprite(CardObject* card_object, int layer)
     );
 
     Sprite* sprite = sprite_new(
-        tile_index,
+        layer + CARD_STARTING_LAYER,
         &oamMain,
         0,
         0,
         SpriteSize_32x32,
         SpriteColorFormat_16Color,
-        layer + CARD_STARTING_LAYER,
+        0, // priority
         true,
-        (int)pb_main,
+        CARD_PB,
         gfx_main + offset * TILE_SIZE
     );
 
