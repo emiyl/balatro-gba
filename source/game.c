@@ -974,7 +974,11 @@ void game_start(void)
     change_background(BG_BLIND_SELECT);
 
     // Deck size/max size
-    consoleSetCursor(&topScreen, DECK_SIZE_RECT.left, DECK_SIZE_RECT.top);
+    consoleSetCursor(
+        &topScreen,
+        DECK_SIZE_RECT.left / TTE_CHAR_SIZE,
+        DECK_SIZE_RECT.top / TTE_CHAR_SIZE
+    );
     consoleSetColor(&topScreen, TTE_WHITE_PB);
     consoleSelect(&topScreen);
     printf(
@@ -992,13 +996,8 @@ void game_start(void)
     display_hands();    // Hand
     display_discards(); // Discard
 
-    display_money(); // Set the money display
-
-    consoleSetCursor(&topScreen, ANTE_TEXT_RECT.left, ANTE_TEXT_RECT.top);
-    consoleSetColor(&topScreen, TTE_YELLOW_PB);
-    printf("%d", ante);
-    consoleSetColor(&topScreen, TTE_YELLOW_PB);
-    printf("/%d", MAX_ANTE);
+    display_money();    // Set the money display
+    display_ante(ante); // Set the ante display
 
     game_change_state(GAME_STATE_BLIND_SELECT);
 }

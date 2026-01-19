@@ -277,13 +277,14 @@ static inline void blind_select_print_blind_req(BlindSelectProps* props, enum Bl
 
     update_text_rect_to_right_align_str(&blind_req_score_rect, blind_req_str_buff, OVERFLOW_RIGHT);
 
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000}%s",
-        blind_req_score_rect.left,
-        blind_req_score_rect.top,
-        TTE_RED_PB,
-        blind_req_str_buff
+    consoleSelect(&topScreen);
+    consoleSetCursor(
+        &topScreen,
+        blind_req_score_rect.left / TTE_CHAR_SIZE,
+        blind_req_score_rect.top / TTE_CHAR_SIZE
     );
+    consoleSetColor(&topScreen, TTE_RED_PB);
+    printf("%s", blind_req_str_buff);
 }
 
 static inline void blind_select_print_blind_reward(BlindSelectProps* props, enum BlindType blind)
@@ -300,13 +301,14 @@ static inline void blind_select_print_blind_reward(BlindSelectProps* props, enum
 
     update_text_rect_to_right_align_str(&blind_reward_rect, blind_reward_str_buff, OVERFLOW_RIGHT);
 
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000}%s",
-        blind_reward_rect.left,
-        blind_reward_rect.top,
-        TTE_YELLOW_PB,
-        blind_reward_str_buff
+    consoleSelect(&topScreen);
+    consoleSetCursor(
+        &topScreen,
+        blind_reward_rect.left / TTE_CHAR_SIZE,
+        blind_reward_rect.top / TTE_CHAR_SIZE
     );
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    printf("%s", blind_reward_str_buff);
 }
 
 static void blind_select_print_blinds_reqs_and_rewards(BlindSelectProps* props)

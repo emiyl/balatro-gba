@@ -102,7 +102,11 @@ bool are_score_flames_active(void)
 void display_round(int value)
 {
     // tte_erase_rect_wrapper(ROUND_TEXT_RECT);
-    consoleSetCursor(&topScreen, ROUND_TEXT_RECT.left, ROUND_TEXT_RECT.top);
+    consoleSetCursor(
+        &topScreen,
+        ROUND_TEXT_RECT.left / TTE_CHAR_SIZE,
+        ROUND_TEXT_RECT.top / TTE_CHAR_SIZE
+    );
     consoleSetColor(&topScreen, TTE_YELLOW_PB);
     consoleSelect(&topScreen);
     printf("%d", value);
@@ -119,7 +123,11 @@ void display_money()
     // Bias left so the number is centered and the "$" sign is on the left
     update_text_rect_to_center_str(&money_text_rect, money_str_buff, SCREEN_LEFT);
 
-    consoleSetCursor(&topScreen, money_text_rect.left, money_text_rect.top);
+    consoleSetCursor(
+        &topScreen,
+        money_text_rect.left / TTE_CHAR_SIZE,
+        money_text_rect.top / TTE_CHAR_SIZE
+    );
     consoleSetColor(&topScreen, TTE_YELLOW_PB);
     consoleSelect(&topScreen);
     printf("%s", money_str_buff);
@@ -143,8 +151,12 @@ void display_chips(void)
 
     update_text_rect_to_right_align_str(&chips_text_rect, chips_str_buff, OVERFLOW_LEFT);
 
-    consoleSetCursor(&topScreen, chips_text_rect.left, chips_text_rect.top);
-    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSetCursor(
+        &topScreen,
+        chips_text_rect.left / TTE_CHAR_SIZE,
+        chips_text_rect.top / TTE_CHAR_SIZE
+    );
+    consoleSetColor(&topScreen, TTE_WHITE_PB);
     consoleSelect(&topScreen);
     printf("%s", chips_str_buff);
 
@@ -165,8 +177,12 @@ void display_mult(void)
         mult_str_buff
     );
 
-    consoleSetCursor(&topScreen, MULT_TEXT_RECT.left, MULT_TEXT_RECT.top);
-    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSetCursor(
+        &topScreen,
+        MULT_TEXT_RECT.left / TTE_CHAR_SIZE,
+        MULT_TEXT_RECT.top / TTE_CHAR_SIZE
+    );
+    consoleSetColor(&topScreen, TTE_WHITE_PB);
     consoleSelect(&topScreen);
     printf("%s", mult_str_buff);
 
@@ -175,9 +191,13 @@ void display_mult(void)
 
 void display_ante(int value)
 {
-    consoleSetCursor(&topScreen, ANTE_TEXT_RECT.left / 8, ANTE_TEXT_RECT.top / 8);
-    consoleSetColor(&topScreen, TTE_YELLOW_PB);
     consoleSelect(&topScreen);
+    consoleSetCursor(
+        &topScreen,
+        ANTE_TEXT_RECT.left / TTE_CHAR_SIZE,
+        ANTE_TEXT_RECT.top / TTE_CHAR_SIZE
+    );
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
     printf("%d", value);
     consoleSetColor(&topScreen, TTE_WHITE_PB);
     printf("/%d", MAX_ANTE);
@@ -195,8 +215,12 @@ void display_temp_score(u32 value)
     update_text_rect_to_center_str(&temp_score_rect, temp_score_str_buff, SCREEN_RIGHT);
 
     tte_erase_rect_wrapper(TEMP_SCORE_RECT);
-    consoleSetCursor(&topScreen, temp_score_rect.left, temp_score_rect.top);
-    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSetCursor(
+        &topScreen,
+        temp_score_rect.left / TTE_CHAR_SIZE,
+        temp_score_rect.top / TTE_CHAR_SIZE
+    );
+    consoleSetColor(&topScreen, TTE_WHITE_PB);
     consoleSelect(&topScreen);
     printf("%s", temp_score_str_buff);
 }
@@ -212,8 +236,8 @@ void display_score(u32 value)
     truncate_uint_to_suffixed_str(value, rect_width(&score_rect) / TTE_CHAR_SIZE, score_str_buff);
     update_text_rect_to_center_str(&score_rect, score_str_buff, SCREEN_RIGHT);
 
-    consoleSetCursor(&topScreen, score_rect.left, score_rect.top);
-    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSetCursor(&topScreen, score_rect.left / TTE_CHAR_SIZE, score_rect.top / TTE_CHAR_SIZE);
+    consoleSetColor(&topScreen, TTE_WHITE_PB);
     consoleSelect(&topScreen);
     printf("%s", score_str_buff);
 }
@@ -221,7 +245,11 @@ void display_score(u32 value)
 void display_hands()
 {
     // tte_erase_rect_wrapper(HANDS_TEXT_RECT);
-    consoleSetCursor(&topScreen, HANDS_TEXT_RECT.left, HANDS_TEXT_RECT.top);
+    consoleSetCursor(
+        &topScreen,
+        HANDS_TEXT_RECT.left / TTE_CHAR_SIZE,
+        HANDS_TEXT_RECT.top / TTE_CHAR_SIZE
+    );
     consoleSetColor(&topScreen, TTE_BLUE_PB);
     consoleSelect(&topScreen);
     printf("%d", get_num_hands_remaining()); // Hand
@@ -231,7 +259,11 @@ void display_discards()
 {
     // tte_erase_rect_wrapper(DISCARDS_TEXT_RECT);
     // Discard
-    consoleSetCursor(&topScreen, DISCARDS_TEXT_RECT.left, DISCARDS_TEXT_RECT.top);
+    consoleSetCursor(
+        &topScreen,
+        DISCARDS_TEXT_RECT.left / TTE_CHAR_SIZE,
+        DISCARDS_TEXT_RECT.top / TTE_CHAR_SIZE
+    );
     consoleSetColor(&topScreen, TTE_RED_PB);
     consoleSelect(&topScreen);
     printf("%d", get_discards());
