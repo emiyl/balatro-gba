@@ -98,7 +98,7 @@ Sprite* blind_token_new(enum BlindType type, int x, int y, int oam_index)
 
     Sprite* sprite = sprite_new(
         oam_index,
-        &oamSub,
+        &oamMain,
         x,
         y,
         SpriteSize_32x32,

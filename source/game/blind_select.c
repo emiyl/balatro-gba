@@ -182,11 +182,8 @@ void game_blind_select_change_background(void)
                 int x_to = 10 + (i * rect_width(&SINGLE_BLIND_SELECT_RECT));
                 int y_to = 20;
 
-                memcpy16(
-                    &BG_MAP_RAM(MAIN_BG_SBB)[x_to + 32 * y_to],
-                    &BG_MAP_RAM(MAIN_BG_SBB)[x_from + 32 * y_from],
-                    3
-                );
+                u16* map = bgGetMapPtr(bg_1);
+                memcpy16(&map[x_to + MAP_WIDTH * y_to], &map[x_from + MAP_WIDTH * y_from], 3);
                 break;
             }
             case BLIND_STATE_SKIPPED: // Change the select icon to "SKIP"
@@ -197,11 +194,8 @@ void game_blind_select_change_background(void)
                 int x_to = 10 + (i * 5);
                 int y_to = 20;
 
-                memcpy16(
-                    &BG_MAP_RAM(MAIN_BG_SBB)[x_to + 32 * y_to],
-                    &BG_MAP_RAM(MAIN_BG_SBB)[x_from + 32 * y_from],
-                    3
-                );
+                u16* map = bgGetMapPtr(bg_1);
+                memcpy16(&map[x_to + MAP_WIDTH * y_to], &map[x_from + MAP_WIDTH * y_from], 3);
                 break;
             }
             case BLIND_STATE_DEFEATED: // Change the select icon to "DEFEATED"
@@ -212,11 +206,8 @@ void game_blind_select_change_background(void)
                 int x_to = 10 + (i * 5);
                 int y_to = 20;
 
-                memcpy16(
-                    &BG_MAP_RAM(MAIN_BG_SBB)[x_to + 32 * y_to],
-                    &BG_MAP_RAM(MAIN_BG_SBB)[x_from + 32 * y_from],
-                    3
-                );
+                u16* map = bgGetMapPtr(bg_1);
+                memcpy16(&map[x_to + MAP_WIDTH * y_to], &map[x_from + MAP_WIDTH * y_from], 3);
                 break;
             }
             default:
