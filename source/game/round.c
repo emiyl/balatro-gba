@@ -496,39 +496,14 @@ static void set_hand(void)
 
 static void reorder_card_sprites_layers(RoundProps* props)
 {
-    // Update the sprites in the hand by destroying them and creating new ones in the correct order
-    // (This feels like a diabolical solution but like literally how else would you do this)
+    // Set sprite priorities based on sorted positions
     int hand_top = props->hand_top;
-    for (int i = 0; i <= hand_top; i++)
-    {
-        // a NULL card will only happen if we rearrange the sprites without having sorted them
-        // before. Any NULL CardObject will be sent to the end by shifting all elements forward
-        CardObject* card_object = props->hand[i];
-        if (card_object == NULL)
-        {
-            if (!shift_null_card_to_end(props, i))
-            {
-                break;
-            }
-        }
-
-        // card_object_get_sprite() will not work here since we need the address
-        sprite_destroy(&(card_object->sprite_object->sprite));
-    }
-
-    // Recreate the sprites for the remaining non NULL cards, in order
     for (int i = 0; i <= hand_top; i++)
     {
         CardObject* card_object = props->hand[i];
         if (card_object != NULL)
         {
-            // Set the sprite for the card object
-            card_object_set_sprite(card_object, i);
-            sprite_position(
-                card_object_get_sprite(card_object),
-                fx2int(card_object->sprite_object->x),
-                fx2int(card_object->sprite_object->y)
-            );
+            set_sprite_priority(card_object->sprite_object->sprite, hand_top - i);
         }
     }
 }
@@ -864,15 +839,18 @@ static inline void card_draw(RoundProps* props)
     CardObject* card_object = card_object_new(deck_pop(props->deck, &props->deck_top));
     props->deck_top--;
 
+    props->hand[++props->hand_top] = card_object;
+
+    // Set the sprite for the card object before positioning
+    card_object_set_sprite(card_object, props->hand_top);
+
     const FIXED deck_x = int2fx(CARD_DRAW_POS.x);
     const FIXED deck_y = int2fx(CARD_DRAW_POS.y);
 
     card_object->sprite_object->x = deck_x;
     card_object->sprite_object->y = deck_y;
 
-    props->hand[++props->hand_top] = card_object;
-
-    // Sort the hand after drawing a card
+    // Sort the hand after drawing each card
     sort_cards(props);
 
     play_sfx(

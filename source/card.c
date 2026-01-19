@@ -19,13 +19,23 @@ const static u16 _card_sprite_lut[NUM_SUITS][NUM_RANKS] = {
     {624, 640, 656, 672, 688, 704, 720, 736, 752, 768, 784, 800, 816}
 };
 
-u16* gfx_main;
-void* pb_main = &SPRITE_PALETTE[CARD_PB * 16];
+u16* gfx_cards[52];
 
 void card_init()
 {
-    gfx_main = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
-    dmaCopy(deck_gfxPal, pb_main, deck_gfxPalLen);
+    // Copy shared palette once for all cards
+    dmaCopy(deck_gfxPal, &SPRITE_PALETTE[CARD_PB * 16], deck_gfxPalLen);
+
+    // Allocate separate graphics buffers for each card on screen
+    for (int i = 0; i < 52; i++)
+    {
+        gfx_cards[i] = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+        dmaCopy(
+            &deck_gfxTiles[i * TILE_SIZE * TILE_SIZE * sizeof(u16)],
+            gfx_cards[i],
+            deck_gfxTilesLen / 52
+        );
+    }
 }
 
 // Card methods
@@ -93,26 +103,20 @@ void card_object_update(CardObject* card_object)
 
 void card_object_set_sprite(CardObject* card_object, int layer)
 {
-    int tile_index = CARD_TID + (layer * CARD_SPRITE_OFFSET);
-    int offset = _card_sprite_lut[card_object->card->suit][card_object->card->rank];
-    dmaCopy(
-        &deck_gfxTiles[offset * TILE_SIZE],
-        gfx_main + offset * TILE_SIZE,
-        deck_gfxTilesLen / 52
-    );
+    int card_index = card_object->card->rank + card_object->card->suit * NUM_RANKS;
 
+    // Create sprite at the specified OAM index using the allocated VRAM
     Sprite* sprite = sprite_new(
-        offset / 16,
+        layer + CARD_STARTING_LAYER,
         &oamMain,
         0,
         0,
         SpriteSize_32x32,
         SpriteColorFormat_16Color,
-        // 0, // priority
-        layer + CARD_STARTING_LAYER,
+        layer,
         true,
         CARD_PB,
-        gfx_main + offset * TILE_SIZE
+        gfx_cards[card_index]
     );
 
     sprite_object_set_sprite(card_object->sprite_object, sprite);

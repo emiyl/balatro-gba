@@ -37,7 +37,7 @@ Sprite* sprite_new(
     s->oam = oam;
     s->entry.x = x;
     s->entry.y = y;
-    s->entry.priority = priority;
+    s->entry.priority = 0;
     s->entry.palette = palette;
     s->entry.colorMode = color;
     s->entry.isHidden = false;
@@ -67,6 +67,7 @@ Sprite* sprite_new(
     s->rotation = 0;
     s->scale_x = 256; // 1.0x scale
     s->scale_y = 256;
+    s->priority = priority;
     s->isDoubleSize = false;
 
     if (affine)
@@ -197,9 +198,39 @@ void sprite_init(OamState* oam)
     }
 }
 
+void sort_sprites_by_priority(OamState* oam)
+{
+    Sprite* sprites = (oam == &oamMain) ? main_sprites : sub_sprites;
+
+    // Simple bubble sort based on priority (lower value = lower priority)
+    for (int i = 0; i < MAX_SPRITES - 1; i++)
+    {
+        for (int j = 0; j < MAX_SPRITES - i - 1; j++)
+        {
+            if (sprites[j].active && sprites[j + 1].active &&
+                sprites[j].priority < sprites[j + 1].priority)
+            {
+                // Swap sprites
+                Sprite temp = sprites[j];
+                sprites[j] = sprites[j + 1];
+                sprites[j + 1] = temp;
+            }
+        }
+    }
+}
+
+void set_sprite_priority(Sprite* sprite, int priority)
+{
+    if (sprite == NULL)
+        return;
+    sprite->priority = priority;
+}
+
 void sprite_draw(OamState* oam)
 {
     Sprite* sprites = (oam == &oamMain) ? main_sprites : sub_sprites;
+    sort_sprites_by_priority(oam);
+    int lowest_priority = 0;
     for (int i = 0; i < MAX_SPRITES; i++)
     {
         Sprite* s = &sprites[i];
@@ -431,7 +462,7 @@ void sprite_object_update(SpriteObject* sprite_object)
         sprite_object->scale,
         -sprite_object->vx + sprite_object->rotation
     );
-    sprite_position(sprite_object->sprite, sprite_object->x, sprite_object->y);
+    sprite_position(sprite_object->sprite, fx2int(sprite_object->x), fx2int(sprite_object->y));
 }
 
 void sprite_object_shake(SpriteObject* sprite_object, mm_word sound_id)

@@ -24,6 +24,7 @@ typedef struct
     s16 rotation;
     s16 scale_x;
     s16 scale_y;
+    int priority;
     bool isDoubleSize;
     bool active;
 } Sprite;
@@ -110,5 +111,9 @@ void sprite_hide(Sprite* sprite);
 void sprite_entry_unhide(SpriteEntry* sprite);
 
 void sprite_unhide(Sprite* sprite);
+
+void set_sprite_priority(Sprite* sprite, int priority);
+
+void sort_sprites_by_priority(OamState* oam);
 
 #endif // SPRITE_H

@@ -44,14 +44,13 @@ void game_main_menu_on_init(void* _)
     main_menu_ace = card_object_new(card_new(SPADES, ACE));
     card_object_set_sprite(main_menu_ace, 0); // Set the sprite for the ace of spades
     main_menu_ace->sprite_object->sprite->isDoubleSize = true;
-    main_menu_ace->sprite_object->tx = MAIN_MENU_ACE_T_X;
-    main_menu_ace->sprite_object->ty = MAIN_MENU_ACE_T_Y;
-    sprite_position(
-        main_menu_ace->sprite_object->sprite,
-        main_menu_ace->sprite_object->tx,
-        main_menu_ace->sprite_object->ty
-    );
+    main_menu_ace->sprite_object->x = int2fx(MAIN_MENU_ACE_T_X);
+    main_menu_ace->sprite_object->y = int2fx(MAIN_MENU_ACE_T_Y);
+    main_menu_ace->sprite_object->tx = int2fx(MAIN_MENU_ACE_T_X);
+    main_menu_ace->sprite_object->ty = int2fx(MAIN_MENU_ACE_T_Y);
     main_menu_ace->sprite_object->tscale = float2fx(0.8f);
+    main_menu_ace->sprite_object->scale = float2fx(0.8f);
+
     selection_x = 0;
 }
 
