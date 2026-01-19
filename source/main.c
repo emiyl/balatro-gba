@@ -99,6 +99,7 @@ void init()
     mmInitDefault((mm_addr)soundbank_bin);
     affine_background_init();
     sprite_init(&oamMain);
+    sprite_init(&oamSub);
     card_init();
     blind_init();
     joker_init();

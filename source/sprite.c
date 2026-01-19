@@ -33,6 +33,8 @@ Sprite* sprite_new(
 {
     Sprite* sprites = (oam == &oamMain) ? main_sprites : sub_sprites;
     Sprite* s = &sprites[index];
+
+    s->index = index;
     s->active = true;
     s->oam = oam;
     s->entry.x = x;
@@ -61,7 +63,6 @@ Sprite* sprite_new(
 
     s->entry.size = size & 0x3;
     s->size = size;
-    s->index = index;
     s->gfx = gfx;
     s->affine_index = -1; // No affine by default
     s->rotation = 0;
@@ -113,7 +114,7 @@ void sprite_destroy(Sprite** sprite)
         (*sprite)->affine_index = -1;
     }
 
-    (*sprite)->active = false;
+    *sprite = NULL;
 }
 
 void sprite_inactive(Sprite* sprite)
@@ -128,7 +129,7 @@ int sprite_get_layer(Sprite* sprite)
 {
     if (!sprite)
         return UNDEFINED;
-    return sprite->entry.priority;
+    return sprite->priority;
 }
 
 // clang-format off

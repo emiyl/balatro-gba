@@ -496,14 +496,38 @@ static void set_hand(void)
 
 static void reorder_card_sprites_layers(RoundProps* props)
 {
-    // Set sprite priorities based on sorted positions
     int hand_top = props->hand_top;
+
     for (int i = 0; i <= hand_top; i++)
     {
-        CardObject* card_object = props->hand[i];
-        if (card_object != NULL)
+        if (props->hand[i] == NULL)
         {
-            set_sprite_priority(card_object->sprite_object->sprite, hand_top - i);
+            if (!shift_null_card_to_end(props, i))
+            {
+                break;
+            }
+        }
+    }
+
+    for (int i = hand_top; i >= 0; i--)
+    {
+        if (props->hand[i] != NULL)
+        {
+            sprite_destroy(&(props->hand[i]->sprite_object->sprite));
+        }
+    }
+
+    // Recreate in forward order so sprites get allocated at slots 0, 1, 2, ...
+    for (int i = 0; i <= hand_top; i++)
+    {
+        if (props->hand[i] != NULL)
+        {
+            card_object_set_sprite(props->hand[i], hand_top - i);
+            sprite_position(
+                card_object_get_sprite(props->hand[i]),
+                fx2int(props->hand[i]->sprite_object->x),
+                fx2int(props->hand[i]->sprite_object->y)
+            );
         }
     }
 }
