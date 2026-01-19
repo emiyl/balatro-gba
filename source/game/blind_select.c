@@ -64,6 +64,7 @@ void game_blind_select_on_init(void* ctx)
     play_sfx(SFX_POP, MM_BASE_PITCH_RATE, BUTTON_SFX_VOLUME);
 }
 
+extern int bg_1;
 void game_blind_select_change_background(void)
 {
     unhide_all_blind_select_tokens();
@@ -78,18 +79,22 @@ void game_blind_select_change_background(void)
 
     toggle_windows(false, true);
 
-    GRIT_CPY(pal_bg_mem, background_blind_select_gfxPal);
-    GRIT_CPY(&tile_mem[MAIN_BG_CBB], background_blind_select_gfxTiles);
-    GRIT_CPY(&se_mem[MAIN_BG_SBB], background_blind_select_gfxMap);
+    dmaCopy(background_blind_select_gfxPal, BG_PALETTE, background_blind_select_gfxPalLen);
+    dmaCopy(
+        background_blind_select_gfxTiles,
+        bgGetGfxPtr(bg_1),
+        background_blind_select_gfxTilesLen
+    );
+    dmaCopy(background_blind_select_gfxMap, bgGetMapPtr(bg_1), background_blind_select_gfxMapLen);
 
     // Copy boss blind colors to blind select palette
     memset16(
-        &pal_bg_mem[1],
+        &BG_PALETTE[1],
         blind_get_color(BLIND_TYPE_BOSS, BLIND_BACKGROUND_MAIN_COLOR_INDEX),
         1
     );
     memset16(
-        &pal_bg_mem[7],
+        &BG_PALETTE[7],
         blind_get_color(BLIND_TYPE_BOSS, BLIND_BACKGROUND_SHADOW_COLOR_INDEX),
         1
     );
@@ -97,15 +102,15 @@ void game_blind_select_change_background(void)
     // Disable the button highlight colors
     // Select button PID is 15 and the outline is 18
     memcpy16(
-        &pal_bg_mem[BLIND_SELECT_BTN_SELECTED_BORDER_PID],
-        &pal_bg_mem[BLIND_SELECT_BTN_PID],
+        &BG_PALETTE[BLIND_SELECT_BTN_SELECTED_BORDER_PID],
+        &BG_PALETTE[BLIND_SELECT_BTN_PID],
         1
     );
     // It seems the skip button (and score multiplier and deck) PB idx is
     // actually 5, not 10. 10 is the selected border color
     // Setting this palette value though doesn't seem to have an
     // effect.
-    memcpy16(&pal_bg_mem[BLIND_SKIP_BTN_SELECTED_BORDER_PID], &pal_bg_mem[BLIND_SKIP_BTN_PID], 1);
+    memcpy16(&BG_PALETTE[BLIND_SKIP_BTN_SELECTED_BORDER_PID], &BG_PALETTE[BLIND_SKIP_BTN_PID], 1);
 
     for (int i = 0; i < BLIND_TYPE_MAX; i++)
     {
@@ -178,8 +183,8 @@ void game_blind_select_change_background(void)
                 int y_to = 20;
 
                 memcpy16(
-                    &se_mem[MAIN_BG_SBB][x_to + 32 * y_to],
-                    &se_mem[MAIN_BG_SBB][x_from + 32 * y_from],
+                    &BG_MAP_RAM(MAIN_BG_SBB)[x_to + 32 * y_to],
+                    &BG_MAP_RAM(MAIN_BG_SBB)[x_from + 32 * y_from],
                     3
                 );
                 break;
@@ -193,8 +198,8 @@ void game_blind_select_change_background(void)
                 int y_to = 20;
 
                 memcpy16(
-                    &se_mem[MAIN_BG_SBB][x_to + 32 * y_to],
-                    &se_mem[MAIN_BG_SBB][x_from + 32 * y_from],
+                    &BG_MAP_RAM(MAIN_BG_SBB)[x_to + 32 * y_to],
+                    &BG_MAP_RAM(MAIN_BG_SBB)[x_from + 32 * y_from],
                     3
                 );
                 break;
@@ -208,8 +213,8 @@ void game_blind_select_change_background(void)
                 int y_to = 20;
 
                 memcpy16(
-                    &se_mem[MAIN_BG_SBB][x_to + 32 * y_to],
-                    &se_mem[MAIN_BG_SBB][x_from + 32 * y_from],
+                    &BG_MAP_RAM(MAIN_BG_SBB)[x_to + 32 * y_to],
+                    &BG_MAP_RAM(MAIN_BG_SBB)[x_from + 32 * y_from],
                     3
                 );
                 break;
@@ -404,21 +409,21 @@ static void blind_select_handle_input(BlindSelectProps* props)
 
     if (selection_y == 0)
     {
-        memset16(&pal_bg_mem[BLIND_SELECT_BTN_SELECTED_BORDER_PID], 0xFFFF, 1);
+        memset16(&BG_PALETTE[BLIND_SELECT_BTN_SELECTED_BORDER_PID], 0xFFFF, 1);
         memcpy16(
-            &pal_bg_mem[BLIND_SKIP_BTN_SELECTED_BORDER_PID],
-            &pal_bg_mem[BLIND_SKIP_BTN_PID],
+            &BG_PALETTE[BLIND_SKIP_BTN_SELECTED_BORDER_PID],
+            &BG_PALETTE[BLIND_SKIP_BTN_PID],
             1
         );
     }
     else
     {
         memcpy16(
-            &pal_bg_mem[BLIND_SELECT_BTN_SELECTED_BORDER_PID],
-            &pal_bg_mem[BLIND_SELECT_BTN_PID],
+            &BG_PALETTE[BLIND_SELECT_BTN_SELECTED_BORDER_PID],
+            &BG_PALETTE[BLIND_SELECT_BTN_PID],
             1
         );
-        memset16(&pal_bg_mem[BLIND_SKIP_BTN_SELECTED_BORDER_PID], 0xFFFF, 1);
+        memset16(&BG_PALETTE[BLIND_SKIP_BTN_SELECTED_BORDER_PID], 0xFFFF, 1);
     }
 }
 

@@ -33,7 +33,6 @@ SOURCEDIRS	:= source
 INCLUDEDIRS	:= include
 GFXDIRS		:= graphics
 FONTDIRS	:= font
-BINDIRS		:= data
 AUDIODIRS	:= audio
 # List of folders to combine into the root of NitroFS:
 NITROFSDIR	:=
@@ -94,10 +93,6 @@ endif
 # Source files
 # ------------
 
-ifneq ($(BINDIRS),)
-    SOURCES_BIN	:= $(shell find -L $(BINDIRS) -name "*.bin")
-    INCLUDEDIRS	+= $(addprefix $(BUILDDIR)/,$(BINDIRS))
-endif
 ifneq ($(GFXDIRS),)
     SOURCES_PNG	:= $(shell find -L $(GFXDIRS) -name "*.png")
     INCLUDEDIRS	+= $(addprefix $(BUILDDIR)/,$(GFXDIRS))
@@ -156,11 +151,9 @@ LDFLAGS		+= $(ARCH) $(LIBDIRSFLAGS) -Wl,-Map,$(MAP) $(DEFINES) \
 # Intermediate build files
 # ------------------------
 
-OBJS_ASSETS	:= $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_BIN))) \
-		   $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_PNG)))
+OBJS_ASSETS	:= $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_PNG)))
 
-HEADERS_ASSETS	:= $(patsubst %.bin,%_bin.h,$(addprefix $(BUILDDIR)/,$(SOURCES_BIN))) \
-		   $(patsubst %.png,%.h,$(addprefix $(BUILDDIR)/,$(SOURCES_PNG)))
+HEADERS_ASSETS	:= $(patsubst %.png,%.h,$(addprefix $(BUILDDIR)/,$(SOURCES_PNG)))
 
 ifneq ($(SOURCES_AUDIO),)
     ifeq ($(strip $(NITROFSDIR)),)

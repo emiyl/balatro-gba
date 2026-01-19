@@ -31,9 +31,11 @@ static Blind _blind_type_map[BLIND_TYPE_MAX] = {
         .gfx_info =                                    \
         {                                              \
                 .tiles = name##_blind_gfxTiles,        \
+                .tilesLen = name##_blind_gfxTilesLen,  \
                 .palette = name##_blind_token_palette, \
                 .tid = NAME##_BLIND_TID,               \
                 .pb = NAME##_BLIND_PB,                 \
+                .vram_addr = NULL,                     \
         },                                             \
         .score_req_multipler = multi,                  \
         .reward = _reward,                             \
@@ -90,15 +92,22 @@ u16 blind_get_color(enum BlindType type, enum BlindColorIndex index)
     return _blind_type_map[type].gfx_info.palette[index];
 }
 
-Sprite* blind_token_new(enum BlindType type, int x, int y, int sprite_index)
+Sprite* blind_token_new(enum BlindType type, int x, int y, int oam_index)
 {
-    u16 a0 = ATTR0_SQUARE | ATTR0_4BPP;
-    u16 a1 = ATTR1_SIZE_32x32;
-    u32 tid = _blind_type_map[type].gfx_info.tid, pb = _blind_type_map[type].gfx_info.pb;
+    const BlindGfxInfo* p_gfx = &_blind_type_map[type].gfx_info;
 
-    Sprite* sprite = sprite_new(a0, a1, tid, pb, sprite_index);
-
-    sprite_position(sprite, x, y);
+    Sprite* sprite = sprite_new(
+        oam_index,
+        &oamSub,
+        x,
+        y,
+        SpriteSize_32x32,
+        SpriteColorFormat_16Color,
+        0, // priority
+        false,
+        p_gfx->pb,
+        p_gfx->vram_addr
+    );
 
     return sprite;
 }
@@ -109,10 +118,14 @@ static void s_blind_gfx_init(enum BlindType type)
     // This will allow this function to change the boss graphics info
     // GRIT_CPY(&tile_mem[TILE_MEM_OBJ_CHARBLOCK0_IDX][_blind_type_map[type].pal_info.tid], tiles);
     BlindGfxInfo* p_gfx = &_blind_type_map[type].gfx_info;
-    memcpy32(
-        &tile_mem[TILE_MEM_OBJ_CHARBLOCK0_IDX][p_gfx->tid],
-        p_gfx->tiles,
-        BLIND_SPRITE_COPY_SIZE
-    );
-    memcpy16(&pal_obj_bank[p_gfx->pb], p_gfx->palette, PAL_ROW_LEN);
+    if (p_gfx->vram_addr != NULL)
+    {
+        return; // Already initialized
+    }
+
+    u16* vram_addr = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+    dmaCopy(p_gfx->tiles, vram_addr, p_gfx->tilesLen);
+    dmaCopy(p_gfx->palette, &SPRITE_PALETTE[p_gfx->pb * PAL_ROW_LEN], PAL_ROW_LEN * sizeof(u16));
+
+    ((BlindGfxInfo*)&_blind_type_map[type].gfx_info)->vram_addr = vram_addr;
 }

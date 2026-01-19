@@ -13,7 +13,6 @@
 #include "list.h"
 #include "soundbank.h"
 #include "sprite.h"
-#include "tonc_memdef.h"
 #include "util.h"
 
 #include <maxmod9.h>

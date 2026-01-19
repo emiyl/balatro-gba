@@ -28,10 +28,9 @@
 #include "soundbank.h"
 #include "splash_screen.h"
 #include "sprite.h"
-#include "tonc_memdef.h"
 #include "util.h"
 
-#include <maxmod9.h>
+#include <maxmod.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -268,7 +267,7 @@ void hide_playing_blind_token(void)
 {
     if (playing_blind_token_exists())
     {
-        obj_hide(playing_blind_token->obj);
+        sprite_hide(playing_blind_token);
     }
 }
 
@@ -276,7 +275,7 @@ void unhide_playing_blind_token(void)
 {
     if (playing_blind_token_exists())
     {
-        obj_unhide(playing_blind_token->obj, 0);
+        sprite_unhide(playing_blind_token);
     }
 }
 
@@ -299,7 +298,7 @@ void hide_round_end_blind_token(void)
 {
     if (round_end_blind_token_exists())
     {
-        obj_hide(round_end_blind_token->obj);
+        sprite_hide(round_end_blind_token);
     }
 }
 
@@ -307,7 +306,7 @@ void unhide_round_end_blind_token(void)
 {
     if (round_end_blind_token_exists())
     {
-        obj_unhide(round_end_blind_token->obj, 0);
+        sprite_unhide(round_end_blind_token);
     }
 }
 
@@ -341,7 +340,7 @@ void hide_blind_select_token(enum BlindType blind_type)
         return;
     }
     Sprite* token_sprite = get_blind_select_token(blind_type);
-    obj_hide(token_sprite->obj);
+    sprite_hide(token_sprite);
 }
 
 void hide_all_blind_select_tokens(void)
@@ -359,7 +358,7 @@ void unhide_blind_select_token(enum BlindType blind_type)
         return;
     }
     Sprite* token_sprite = get_blind_select_token(blind_type);
-    obj_unhide(token_sprite->obj, 0);
+    sprite_unhide(token_sprite);
 }
 
 void unhide_all_blind_select_tokens(void)
@@ -392,8 +391,8 @@ void get_blind_select_token_pos(enum BlindType blind_type, int* x, int* y)
         return;
     }
     Sprite* token_sprite = get_blind_select_token(blind_type);
-    *x = token_sprite->pos.x;
-    *y = token_sprite->pos.y;
+    *x = token_sprite->entry.x;
+    *y = token_sprite->entry.y;
 }
 
 // Blind states
@@ -975,11 +974,11 @@ void game_start(void)
     change_background(BG_BLIND_SELECT);
 
     // Deck size/max size
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000}%d/%d",
-        DECK_SIZE_RECT.left,
-        DECK_SIZE_RECT.top,
-        TTE_WHITE_PB,
+    consoleSetCursor(&topScreen, DECK_SIZE_RECT.left, DECK_SIZE_RECT.top);
+    consoleSetColor(&topScreen, TTE_WHITE_PB);
+    consoleSelect(&topScreen);
+    printf(
+        "%d/%d",
         deck_get_size(),
         deck_get_max_size(hand_top, played_top, deck_top, discard_top)
     );
@@ -995,15 +994,11 @@ void game_start(void)
 
     display_money(); // Set the money display
 
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000}%d#{cx:0x%X000}/%d",
-        ANTE_TEXT_RECT.left,
-        ANTE_TEXT_RECT.top,
-        TTE_YELLOW_PB,
-        ante,
-        TTE_WHITE_PB,
-        MAX_ANTE
-    ); // Ante
+    consoleSetCursor(&topScreen, ANTE_TEXT_RECT.left, ANTE_TEXT_RECT.top);
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    printf("%d", ante);
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    printf("/%d", MAX_ANTE);
 
     game_change_state(GAME_STATE_BLIND_SELECT);
 }

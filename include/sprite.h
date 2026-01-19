@@ -15,10 +15,17 @@
 
 typedef struct
 {
-    OBJ_ATTR* obj;
-    OBJ_AFFINE* aff;
-    POINT pos;
-    int idx;
+    SpriteEntry entry;
+    OamState* oam;
+    int index;
+    u16* gfx;
+    SpriteSize size;
+    int affine_index;
+    s16 rotation;
+    s16 scale_x;
+    s16 scale_y;
+    bool isDoubleSize;
+    bool active;
 } Sprite;
 
 // A sprite object is a sprite that is focusable and movable in animation
@@ -39,8 +46,30 @@ typedef struct
 } SpriteObject;
 
 // Sprite methods
-Sprite* sprite_new(u16 a0, u16 a1, u32 tid, u32 pb, int sprite_index);
-Sprite* affine_sprite_new(u16 a0, u16 a1, u32 tid, u32 pb);
+Sprite* sprite_new(
+    int index,
+    OamState* oam,
+    int x,
+    int y,
+    SpriteSize size,
+    SpriteColorFormat color,
+    int priority,
+    bool affine,
+    int palette,
+    u16* gfx
+);
+Sprite* affine_sprite_new(
+    int index,
+    OamState* oam,
+    int x,
+    int y,
+    SpriteSize size,
+    SpriteColorFormat color,
+    int priority,
+    bool affine,
+    int palette,
+    u16* gfx
+);
 void sprite_destroy(Sprite** sprite);
 int sprite_get_layer(Sprite* sprite);
 bool sprite_get_dimensions(Sprite* sprite, int* width, int* height);
@@ -48,8 +77,8 @@ bool sprite_get_height(Sprite* sprite, int* height);
 bool sprite_get_width(Sprite* sprite, int* width);
 
 // Sprite functions
-void sprite_init();
-void sprite_draw();
+void sprite_init(OamState* oam);
+void sprite_draw(OamState* oam);
 int sprite_get_pb(const Sprite* sprite);
 
 // SpriteObject methods
@@ -67,12 +96,19 @@ bool sprite_object_get_height(SpriteObject* sprite_object, int* height);
 bool sprite_object_get_width(SpriteObject* sprite_object, int* width);
 bool sprite_object_is_focused(SpriteObject* sprite_object);
 
-INLINE void sprite_position(Sprite* sprite, int x, int y)
-{
-    sprite->pos.x = x;
-    sprite->pos.y = y;
+void sprite_set_rotation(Sprite* sprite, s16 angle);
+void sprite_set_scale(Sprite* sprite, s16 scale_x, s16 scale_y);
+void sprite_enable_affine(Sprite* sprite, bool double_size);
+void sprite_disable_affine(Sprite* sprite);
 
-    obj_set_pos(sprite->obj, x, y);
-}
+void sprite_position(Sprite* sprite, int x, int y);
+
+void sprite_entry_hide(SpriteEntry* sprite);
+
+void sprite_hide(Sprite* sprite);
+
+void sprite_entry_unhide(SpriteEntry* sprite);
+
+void sprite_unhide(Sprite* sprite);
 
 #endif // SPRITE_H

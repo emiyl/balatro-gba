@@ -19,7 +19,6 @@
 #include "selection_grid.h"
 #include "soundbank.h"
 #include "sprite.h"
-#include "tonc_memdef.h"
 #include "util.h"
 
 #include <maxmod9.h>
@@ -516,12 +515,12 @@ static void shop_top_row_on_key_transit(
         reroll_cost = REROLL_BASE_COST;
 
         memcpy16(
-            &pal_bg_mem[NEXT_ROUND_BTN_SELECTED_BORDER_PID],
-            &pal_bg_mem[SHOP_PANEL_SHADOW_PID],
+            &BG_PALETTE[NEXT_ROUND_BTN_SELECTED_BORDER_PID],
+            &BG_PALETTE[SHOP_PANEL_SHADOW_PID],
             1
         );
 
-        // memcpy16(&pal_bg_mem[16], &pal_bg_mem[6], 1);
+        // memcpy16(&BG_PALETTE[16], &BG_PALETTE[6], 1);
         // This changes the color of the button to a dark red.
         // However, it shares a palette with the shop icon, so it will change the color of the shop
         // icon as well. And I don't care enough to fix it right now.
@@ -564,8 +563,8 @@ static bool shop_top_row_on_selection_changed(
         {
             // Remove next round button highlight
             memcpy16(
-                &pal_bg_mem[NEXT_ROUND_BTN_SELECTED_BORDER_PID],
-                &pal_bg_mem[NEXT_ROUND_BTN_PID],
+                &BG_PALETTE[NEXT_ROUND_BTN_SELECTED_BORDER_PID],
+                &BG_PALETTE[NEXT_ROUND_BTN_PID],
                 1
             );
         }
@@ -582,7 +581,7 @@ static bool shop_top_row_on_selection_changed(
         if (new_selection->x == NEXT_ROUND_BTN_SEL_X)
         {
             // Highlight next round button
-            memset16(&pal_bg_mem[NEXT_ROUND_BTN_SELECTED_BORDER_PID], BTN_HIGHLIGHT_COLOR, 1);
+            memset16(&BG_PALETTE[NEXT_ROUND_BTN_SELECTED_BORDER_PID], BTN_HIGHLIGHT_COLOR, 1);
         }
         else
         {
@@ -611,11 +610,11 @@ static bool shop_reroll_row_on_selection_changed(
     if (row_idx == prev_selection->y)
     {
         // Remove highlight
-        memcpy16(&pal_bg_mem[REROLL_BTN_SELECTED_BORDER_PID], &pal_bg_mem[REROLL_BTN_PID], 1);
+        memcpy16(&BG_PALETTE[REROLL_BTN_SELECTED_BORDER_PID], &BG_PALETTE[REROLL_BTN_PID], 1);
     }
     else if (row_idx == new_selection->y)
     {
-        memset16(&pal_bg_mem[REROLL_BTN_SELECTED_BORDER_PID], BTN_HIGHLIGHT_COLOR, 1);
+        memset16(&BG_PALETTE[REROLL_BTN_SELECTED_BORDER_PID], BTN_HIGHLIGHT_COLOR, 1);
     }
 
     return true;
@@ -745,9 +744,9 @@ static void game_shop_outro(ShopProps* props)
     else if (timer == 2)
     {
         int y = 5;
-        memset16(&se_mat[MAIN_BG_SBB][y - 1][0], 0x0001, 1);
-        memset16(&se_mat[MAIN_BG_SBB][y - 1][1], 0x0002, 7);
-        memset16(&se_mat[MAIN_BG_SBB][y - 1][8], SE_HFLIP | 0x0001, 1);
+        memset16(&BG_MAP_RAM(MAIN_BG_SBB)[MAP_INDEX(0, y - 1)], 0x0001, 1);
+        memset16(&BG_MAP_RAM(MAIN_BG_SBB)[MAP_INDEX(1, y - 1)], 0x0002, 7);
+        memset16(&BG_MAP_RAM(MAIN_BG_SBB)[MAP_INDEX(8, y - 1)], 0x0400 | 0x0001, 1);
     }
 
     if (timer >= MENU_POP_OUT_ANIM_FRAMES)
@@ -761,10 +760,10 @@ static inline void game_shop_lights_anim_frame(void)
 {
     // Shift palette around the border of the shop icon
     COLOR shifted_palette[4];
-    memcpy16(&shifted_palette[0], &pal_bg_mem[SHOP_LIGHTS_2_PID], 1);
-    memcpy16(&shifted_palette[1], &pal_bg_mem[SHOP_LIGHTS_3_PID], 1);
-    memcpy16(&shifted_palette[2], &pal_bg_mem[SHOP_LIGHTS_4_PID], 1);
-    memcpy16(&shifted_palette[3], &pal_bg_mem[SHOP_LIGHTS_1_PID], 1);
+    memcpy16(&shifted_palette[0], &BG_PALETTE[SHOP_LIGHTS_2_PID], 1);
+    memcpy16(&shifted_palette[1], &BG_PALETTE[SHOP_LIGHTS_3_PID], 1);
+    memcpy16(&shifted_palette[2], &BG_PALETTE[SHOP_LIGHTS_4_PID], 1);
+    memcpy16(&shifted_palette[3], &BG_PALETTE[SHOP_LIGHTS_1_PID], 1);
 
     // Circularly shift the palette
     int last = shifted_palette[3];
@@ -777,10 +776,10 @@ static inline void game_shop_lights_anim_frame(void)
     shifted_palette[0] = last;
 
     // Copy the shifted palette to the next 4 slots
-    memcpy16(&pal_bg_mem[SHOP_LIGHTS_2_PID], &shifted_palette[0], 1);
-    memcpy16(&pal_bg_mem[SHOP_LIGHTS_3_PID], &shifted_palette[1], 1);
-    memcpy16(&pal_bg_mem[SHOP_LIGHTS_4_PID], &shifted_palette[2], 1);
-    memcpy16(&pal_bg_mem[SHOP_LIGHTS_1_PID], &shifted_palette[3], 1);
+    memcpy16(&BG_PALETTE[SHOP_LIGHTS_2_PID], &shifted_palette[0], 1);
+    memcpy16(&BG_PALETTE[SHOP_LIGHTS_3_PID], &shifted_palette[1], 1);
+    memcpy16(&BG_PALETTE[SHOP_LIGHTS_4_PID], &shifted_palette[2], 1);
+    memcpy16(&BG_PALETTE[SHOP_LIGHTS_1_PID], &shifted_palette[3], 1);
 }
 
 void game_shop_on_update(void* ctx)
@@ -844,26 +843,27 @@ void game_shop_on_exit(void* ctx)
     update_game_state_ctx(GAME_STATE_SHOP);
 }
 
+extern int bg_1;
 void game_shop_change_background()
 {
     toggle_windows(false, true);
 
-    GRIT_CPY(pal_bg_mem, background_shop_gfxPal);
-    GRIT_CPY(&tile_mem[MAIN_BG_CBB], background_shop_gfxTiles);
-    GRIT_CPY(&se_mem[MAIN_BG_SBB], background_shop_gfxMap);
+    dmaCopy(background_shop_gfxPal, BG_PALETTE, background_shop_gfxPalLen);
+    dmaCopy(background_shop_gfxTiles, bgGetGfxPtr(bg_1), background_shop_gfxTilesLen);
+    dmaCopy(background_shop_gfxMap, bgGetMapPtr(bg_1), background_shop_gfxMapLen);
 
     // Set the outline colors for the shop background. This is used for the alternate shop
     // palettes when opening packs
-    memset16(&pal_bg_mem[SHOP_BOTTOM_PANEL_BORDER_PID], 0x213D, 1);
-    memset16(&pal_bg_mem[SHOP_PANEL_SHADOW_PID], 0x10B4, 1);
+    memset16(&BG_PALETTE[SHOP_BOTTOM_PANEL_BORDER_PID], 0x213D, 1);
+    memset16(&BG_PALETTE[SHOP_PANEL_SHADOW_PID], 0x10B4, 1);
 
     // Reset the shop lights to correct colors
-    memset16(&pal_bg_mem[SHOP_LIGHTS_2_PID], SHOP_LIGHTS_2_CLR, 1);
-    memset16(&pal_bg_mem[SHOP_LIGHTS_3_PID], SHOP_LIGHTS_3_CLR, 1);
-    memset16(&pal_bg_mem[SHOP_LIGHTS_4_PID], SHOP_LIGHTS_4_CLR, 1);
-    memset16(&pal_bg_mem[SHOP_LIGHTS_1_PID], SHOP_LIGHTS_1_CLR, 1);
+    memset16(&BG_PALETTE[SHOP_LIGHTS_2_PID], SHOP_LIGHTS_2_CLR, 1);
+    memset16(&BG_PALETTE[SHOP_LIGHTS_3_PID], SHOP_LIGHTS_3_CLR, 1);
+    memset16(&BG_PALETTE[SHOP_LIGHTS_4_PID], SHOP_LIGHTS_4_CLR, 1);
+    memset16(&BG_PALETTE[SHOP_LIGHTS_1_PID], SHOP_LIGHTS_1_CLR, 1);
 
     // Disable the button highlight colors
-    memcpy16(&pal_bg_mem[REROLL_BTN_SELECTED_BORDER_PID], &pal_bg_mem[REROLL_BTN_PID], 1);
-    memcpy16(&pal_bg_mem[NEXT_ROUND_BTN_SELECTED_BORDER_PID], &pal_bg_mem[NEXT_ROUND_BTN_PID], 1);
+    memcpy16(&BG_PALETTE[REROLL_BTN_SELECTED_BORDER_PID], &BG_PALETTE[REROLL_BTN_PID], 1);
+    memcpy16(&BG_PALETTE[NEXT_ROUND_BTN_SELECTED_BORDER_PID], &BG_PALETTE[NEXT_ROUND_BTN_PID], 1);
 }

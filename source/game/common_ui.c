@@ -102,13 +102,10 @@ bool are_score_flames_active(void)
 void display_round(int value)
 {
     // tte_erase_rect_wrapper(ROUND_TEXT_RECT);
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000}%d",
-        ROUND_TEXT_RECT.left,
-        ROUND_TEXT_RECT.top,
-        TTE_YELLOW_PB,
-        value
-    );
+    consoleSetCursor(&topScreen, ROUND_TEXT_RECT.left, ROUND_TEXT_RECT.top);
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSelect(&topScreen);
+    printf("%d", value);
 }
 
 void display_money()
@@ -122,13 +119,10 @@ void display_money()
     // Bias left so the number is centered and the "$" sign is on the left
     update_text_rect_to_center_str(&money_text_rect, money_str_buff, SCREEN_LEFT);
 
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000}%s",
-        money_text_rect.left,
-        money_text_rect.top,
-        TTE_YELLOW_PB,
-        money_str_buff
-    );
+    consoleSetCursor(&topScreen, money_text_rect.left, money_text_rect.top);
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSelect(&topScreen);
+    printf("%s", money_str_buff);
 }
 
 void display_chips(void)
@@ -149,13 +143,11 @@ void display_chips(void)
 
     update_text_rect_to_right_align_str(&chips_text_rect, chips_str_buff, OVERFLOW_LEFT);
 
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000;}%s",
-        chips_text_rect.left,
-        chips_text_rect.top,
-        TTE_WHITE_PB,
-        chips_str_buff
-    );
+    consoleSetCursor(&topScreen, chips_text_rect.left, chips_text_rect.top);
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSelect(&topScreen);
+    printf("%s", chips_str_buff);
+
     check_flaming_score();
 }
 
@@ -173,26 +165,22 @@ void display_mult(void)
         mult_str_buff
     );
 
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000;}%s",
-        MULT_TEXT_RECT.left,
-        MULT_TEXT_RECT.top,
-        TTE_WHITE_PB,
-        mult_str_buff
-    );
+    consoleSetCursor(&topScreen, MULT_TEXT_RECT.left, MULT_TEXT_RECT.top);
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSelect(&topScreen);
+    printf("%s", mult_str_buff);
 
     check_flaming_score();
 }
 
 void display_ante(int value)
 {
-    tte_printf(
-        "#{P:%d,%d; cx:0xC000}%d#{cx:0xF000}/%d",
-        ANTE_TEXT_RECT.left,
-        ANTE_TEXT_RECT.top,
-        value,
-        MAX_ANTE
-    );
+    consoleSetCursor(&topScreen, ANTE_TEXT_RECT.left, ANTE_TEXT_RECT.top);
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSelect(&topScreen);
+    printf("%d", value);
+    consoleSetColor(&topScreen, TTE_WHITE_PB);
+    printf("/%d", MAX_ANTE);
 }
 
 void display_temp_score(u32 value)
@@ -207,13 +195,10 @@ void display_temp_score(u32 value)
     update_text_rect_to_center_str(&temp_score_rect, temp_score_str_buff, SCREEN_RIGHT);
 
     tte_erase_rect_wrapper(TEMP_SCORE_RECT);
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000}%s",
-        temp_score_rect.left,
-        temp_score_rect.top,
-        TTE_WHITE_PB,
-        temp_score_str_buff
-    );
+    consoleSetCursor(&topScreen, temp_score_rect.left, temp_score_rect.top);
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSelect(&topScreen);
+    printf("%s", temp_score_str_buff);
 }
 
 void display_score(u32 value)
@@ -227,36 +212,29 @@ void display_score(u32 value)
     truncate_uint_to_suffixed_str(value, rect_width(&score_rect) / TTE_CHAR_SIZE, score_str_buff);
     update_text_rect_to_center_str(&score_rect, score_str_buff, SCREEN_RIGHT);
 
-    tte_printf(
-        "#{P:%d,%d; cx:0x%X000}%s",
-        score_rect.left,
-        score_rect.top,
-        TTE_WHITE_PB,
-        score_str_buff
-    );
+    consoleSetCursor(&topScreen, score_rect.left, score_rect.top);
+    consoleSetColor(&topScreen, TTE_YELLOW_PB);
+    consoleSelect(&topScreen);
+    printf("%s", score_str_buff);
 }
 
 void display_hands()
 {
     // tte_erase_rect_wrapper(HANDS_TEXT_RECT);
-    tte_printf(
-        "#{P:%d,%d; cx:0xD000}%d",
-        HANDS_TEXT_RECT.left,
-        HANDS_TEXT_RECT.top,
-        get_num_hands_remaining()
-    ); // Hand
+    consoleSetCursor(&topScreen, HANDS_TEXT_RECT.left, HANDS_TEXT_RECT.top);
+    consoleSetColor(&topScreen, TTE_BLUE_PB);
+    consoleSelect(&topScreen);
+    printf("%d", get_num_hands_remaining()); // Hand
 }
 
 void display_discards()
 {
     // tte_erase_rect_wrapper(DISCARDS_TEXT_RECT);
     // Discard
-    tte_printf(
-        "#{P:%d,%d; cx:0xE000}%d",
-        DISCARDS_TEXT_RECT.left,
-        DISCARDS_TEXT_RECT.top,
-        get_discards()
-    );
+    consoleSetCursor(&topScreen, DISCARDS_TEXT_RECT.left, DISCARDS_TEXT_RECT.top);
+    consoleSetColor(&topScreen, TTE_RED_PB);
+    consoleSelect(&topScreen);
+    printf("%d", get_discards());
 }
 
 Rect get_text_rect_under_sprite_object(SpriteObject* sprite_object)

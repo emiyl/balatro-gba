@@ -1,6 +1,7 @@
 #include "button.h"
 
 #include "audio_utils.h"
+#include "nds_compat.h"
 #include "soundbank.h"
 
 #include <nds.h>
@@ -10,9 +11,9 @@ void button_set_highlight(Button* button, bool highlight)
     if (button == NULL)
         return;
 
-    u16 set_color = highlight ? BTN_HIGHLIGHT_COLOR : pal_bg_mem[button->button_pal_idx];
+    u16 set_color = highlight ? BTN_HIGHLIGHT_COLOR : BG_PALETTE[button->button_pal_idx];
 
-    memset16(&pal_bg_mem[button->border_pal_idx], set_color, 1);
+    memset16(&BG_PALETTE[button->border_pal_idx], set_color, 1);
 }
 
 void button_press(Button* button, void* ctx)

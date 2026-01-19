@@ -57,12 +57,17 @@ void affine_background_init();
 /**
  * @brief Interrupt routine to update display on HBLANK
  */
-IWRAM_CODE void affine_background_hblank();
+void affine_background_hblank();
+
+/**
+ * @brief Interrupt routine to update display on VBLANK
+ */
+void affine_background_vblank();
 
 /**
  * @brief Per-frame update of the affine background
  */
-IWRAM_CODE void affine_background_update();
+void affine_background_update();
 
 /**
  * @brief Update the affine background color

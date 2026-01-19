@@ -14,6 +14,7 @@
 #define SELECTION_GRID_H
 
 #include "list.h"
+#include "nds_compat.h"
 
 #include <nds.h>
 

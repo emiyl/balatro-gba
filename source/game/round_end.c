@@ -9,7 +9,6 @@
 #include "game/rect.h"
 #include "game/timer.h"
 #include "graphic_utils.h"
-#include "tonc_memdef.h"
 #include "util.h"
 
 #include <nds.h>
@@ -182,8 +181,8 @@ static void game_round_end_display_score_min(RoundEndProps* props)
     const int y_to = 11;
 
     memcpy16(
-        &se_mem[MAIN_BG_SBB][x_to + timer_offset + 32 * y_to],
-        &se_mem[MAIN_BG_SBB][x_from + timer_offset + 32 * y_from],
+        &BG_MAP_RAM(MAIN_BG_SBB)[x_to + timer_offset + 32 * y_to],
+        &BG_MAP_RAM(MAIN_BG_SBB)[x_from + timer_offset + 32 * y_from],
         1
     );
 
@@ -249,14 +248,14 @@ static void game_round_end_panel_exit(RoundEndProps* props)
         else if (timer == 2)
         {
             int y = 5;
-            memset16(&se_mem[MAIN_BG_SBB][32 * (y - 1)], 0x0001, 1);
-            memset16(&se_mem[MAIN_BG_SBB][1 + 32 * (y - 1)], 0x0002, 7);
-            memset16(&se_mem[MAIN_BG_SBB][8 + 32 * (y - 1)], 0x0401, 1);
+            memset16(&BG_MAP_RAM(MAIN_BG_SBB)[32 * (y - 1)], 0x0001, 1);
+            memset16(&BG_MAP_RAM(MAIN_BG_SBB)[1 + 32 * (y - 1)], 0x0002, 7);
+            memset16(&BG_MAP_RAM(MAIN_BG_SBB)[8 + 32 * (y - 1)], 0x0401, 1);
         }
     }
     else if (timer > FRAMES(20))
     {
-        memset16(&pal_bg_mem[REWARD_PANEL_BORDER_PID], 0x1483, 1);
+        memset16(&BG_PALETTE[REWARD_PANEL_BORDER_PID], 0x1483, 1);
         props->substate = DISPLAY_REWARDS;
         props->timer = TM_ZERO;
     }

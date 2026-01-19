@@ -7,7 +7,7 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include <tonc_types.h>
+#include <nds.h>
 
 #define BTN_HIGHLIGHT_COLOR 0xFFFF
 

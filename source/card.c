@@ -19,9 +19,13 @@ const static u16 _card_sprite_lut[NUM_SUITS][NUM_RANKS] = {
     {624, 640, 656, 672, 688, 704, 720, 736, 752, 768, 784, 800, 816}
 };
 
+u16* gfx_main;
+void* pb_main = &SPRITE_PALETTE[CARD_PB * 16];
+
 void card_init()
 {
-    GRIT_CPY(&pal_obj_mem[CARD_PB], deck_gfxPal);
+    gfx_main = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+    dmaCopy(deck_gfxPal, pb_main, deck_gfxPalLen);
 }
 
 // Card methods
@@ -90,19 +94,26 @@ void card_object_update(CardObject* card_object)
 void card_object_set_sprite(CardObject* card_object, int layer)
 {
     int tile_index = CARD_TID + (layer * CARD_SPRITE_OFFSET);
-    memcpy32(
-        &tile_mem[TILE_MEM_OBJ_CHARBLOCK0_IDX][tile_index],
-        &deck_gfxTiles
-            [_card_sprite_lut[card_object->card->suit][card_object->card->rank] * TILE_SIZE],
-        TILE_SIZE * CARD_SPRITE_OFFSET
+    int offset = _card_sprite_lut[card_object->card->suit][card_object->card->rank];
+    dmaCopy(
+        &deck_gfxTiles[offset * TILE_SIZE],
+        gfx_main + offset * TILE_SIZE,
+        deck_gfxTilesLen / 52
     );
+
     Sprite* sprite = sprite_new(
-        ATTR0_SQUARE | ATTR0_4BPP | ATTR0_AFF,
-        ATTR1_SIZE_32,
         tile_index,
+        &oamMain,
         0,
-        layer + CARD_STARTING_LAYER
+        0,
+        SpriteSize_32x32,
+        SpriteColorFormat_16Color,
+        layer + CARD_STARTING_LAYER,
+        true,
+        (int)pb_main,
+        gfx_main + offset * TILE_SIZE
     );
+
     sprite_object_set_sprite(card_object->sprite_object, sprite);
 }
 

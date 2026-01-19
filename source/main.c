@@ -15,82 +15,92 @@
 // Graphics
 #include "affine_background_gfx.h"
 #include "background_gfx.h"
+#include "gbalatro_sys8.h"
 
 // Audio
 #include "soundbank.h"
 #include "soundbank_bin.h"
 
+PrintConsole topScreen;
+const size_t size_char_4bpp = (8 * 8) / 2; // 4bpp = 2 pixels per byte
+ConsoleFont font = {
+    .gfx = gbalatro_sys8Tiles,
+    .pal = gbalatro_sys8Pal,
+    .numColors = gbalatro_sys8PalLen / 2,
+    .bpp = 4,
+    .asciiOffset = 32,
+    .numChars = gbalatro_sys8TilesLen / size_char_4bpp
+};
+
+int bg_0, bg_1, bg_2;
+
 void init()
 {
-    irq_init(NULL);
-    irq_add(II_VBLANK, mmVBlank);
-    irq_add(II_HBLANK, affine_background_hblank);
+    powerOn(POWER_ALL_2D);
 
-    // Initialize text engine
-    tte_init_se(
-        0,
-        BG_CBB(TTE_CBB) | BG_SBB(TTE_SBB),
-        0,
-        CLR_WHITE,
-        TTE_BIT_UNPACK_OFFSET,
-        &gbalatro_sys8Font,
+    videoSetMode(MODE_2_2D);
+    videoSetModeSub(MODE_2_2D);
 
-        // Explicitly use 8x8 tile text drawing function to improve performance
-        // See https://gbadev.net/tonc/tte.html#ssec-map-reg
-        se_drawg_w8h8
+    vramSetBankA(VRAM_A_MAIN_BG);
+    vramSetBankB(VRAM_B_MAIN_SPRITE);
+    vramSetBankC(VRAM_C_SUB_BG);
+    vramSetBankD(VRAM_D_SUB_SPRITE);
+
+    oamInit(&oamMain, SpriteMapping_1D_128, false);
+    oamInit(&oamSub, SpriteMapping_1D_128, false);
+
+    oamClear(&oamMain, 0, MAX_SPRITES);
+    oamClear(&oamSub, 0, MAX_SPRITES);
+
+    bg_0 = bgInit(0, BgType_Text4bpp, BgSize_T_256x256, 0, 1);
+    bg_1 = bgInit(1, BgType_Text8bpp, BgSize_T_512x512, 2, 3);
+    bg_2 = bgInit(2, BgType_Rotation, BgSize_R_128x128, 1, 7);
+
+    consoleInit(
+        &topScreen,
+        0,                // Background layer
+        BgType_Text4bpp,  // 4 BPP mode
+        BgSize_T_256x256, // Size of the background layer
+        0,                // Map base
+        1,                // Tile base,
+        true,             // Main screen
+        false             // Don't load graphics
     );
-    tte_erase_screen();
-    tte_init_con();
+    consoleSetFont(&topScreen, &font);
 
-    // TTE palette setup
-    pal_bg_bank[TTE_YELLOW_PB][TTE_BIT_ON_CLR_IDX] = TEXT_CLR_YELLOW;
-    pal_bg_bank[TTE_BLUE_PB][TTE_BIT_ON_CLR_IDX] = TEXT_CLR_BLUE;
-    pal_bg_bank[TTE_RED_PB][TTE_BIT_ON_CLR_IDX] = TEXT_CLR_RED;
-    pal_bg_bank[TTE_WHITE_PB][TTE_BIT_ON_CLR_IDX] = TEXT_CLR_WHITE;
+    BG_PALETTE[(TTE_YELLOW_PB * 16) + 1] = TEXT_CLR_YELLOW;
+    BG_PALETTE[(TTE_BLUE_PB * 16) + 1] = TEXT_CLR_BLUE;
+    BG_PALETTE[(TTE_RED_PB * 16) + 1] = TEXT_CLR_RED;
+    BG_PALETTE[(TTE_WHITE_PB * 16) + 1] = TEXT_CLR_WHITE;
 
-    // Set up the video mode
-    // BG0 is the TTE text layer
-    REG_BG0CNT = BG_PRIO(0) | BG_CBB(TTE_CBB) | BG_SBB(TTE_SBB) | BG_4BPP;
-    // BG1 is the main background layer
-    REG_BG1CNT = BG_PRIO(1) | BG_CBB(MAIN_BG_CBB) | BG_SBB(MAIN_BG_SBB) | BG_8BPP;
-    // BG2 is the affine background layer
-    REG_BG2CNT = BG_PRIO(2) | BG_CBB(AFFINE_BG_CBB) | BG_SBB(AFFINE_BG_SBB) | BG_8BPP | BG_WRAP;
+    windowSetBoundsSub(WINDOW_0, 73, 76, 200, 160);
+    windowSetBoundsSub(WINDOW_1, 88, 0, 248, 44);
 
-    int win1_left = 72;
-    int win1_top = 44;
-    int win1_right = 200;
-    int win1_bottom = 128;
+    int eva = 8, evb = 8, evy = 8;
 
-    int win2_left = 72;
-    int win2_top = 0;
-    int win2_right = 232;
-    int win2_bottom = 44;
+    REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
+    REG_BLDALPHA_SUB = BLDALPHA_EVA(8) | BLDALPHA_EVB(8);
+    REG_BLDY_SUB = evy;
 
-    REG_WIN0H = win1_left << 8 | win1_right;
-    REG_WIN0V = win1_top << 8 | win1_bottom;
-    REG_WIN0CNT = WIN_ALL | WIN_BLD;
-    REG_WINOUTCNT = WIN_ALL;
+    // Enable blending in both WINDOW_0 and WINDOW_1
+    REG_WININ_SUB =
+        (0x0F | (1 << 5)) | ((0x0F | (1 << 5)) << 8); // BG0-3 + blend for both win0 and win1
+    REG_WINOUT_SUB = 0x0F;                            // BG0-3 outside windows (no blending)
 
-    REG_WIN1H = win2_left << 8 | win2_right;
-    REG_WIN1V = win2_top << 8 | win2_bottom;
-    REG_WIN1CNT = WIN_ALL | WIN_BLD;
-
-    REG_BLDCNT = BLD_BUILD(BLD_BG1, BLD_BG2, 1);
-
-    REG_BLDALPHA = BLDA_BUILD(0, 13);
-
-    REG_DISPCNT = DCNT_MODE1 | DCNT_OBJ_1D | DCNT_BG0 | DCNT_BG1 | DCNT_BG2 | DCNT_OBJ | DCNT_WIN0 |
-                  DCNT_WIN1;
+    bgWindowEnable(bg_1, WINDOW_OUT | WINDOW_0 | WINDOW_1);
+    bgWindowEnable(bg_2, WINDOW_OUT | WINDOW_0 | WINDOW_1);
+    oamWindowEnable(&oamSub, WINDOW_OUT | WINDOW_0 | WINDOW_1);
+    windowEnableSub(WINDOW_OUT | WINDOW_0 | WINDOW_1);
 
     // Initialize subsystems
-    mmInitDefault((mm_addr)soundbank_bin, 12);
+    mmInitDefault((mm_addr)soundbank_bin);
     affine_background_init();
-    sprite_init();
+    sprite_init(&oamMain);
     card_init();
     blind_init();
     joker_init();
     game_init();
-    game_change_state(GAME_STATE_SPLASH_SCREEN);
+    game_change_state(GAME_STATE_MAIN_MENU);
 }
 
 void update()
@@ -101,7 +111,7 @@ void update()
 
 void draw()
 {
-    sprite_draw();
+    sprite_draw(&oamMain);
 }
 
 int main()
@@ -110,11 +120,12 @@ int main()
 
     while (true)
     {
-        VBlankIntrWait();
-        mmFrame();
-        key_poll();
+        scanKeys();
+
         update();
         draw();
+
+        swiWaitForVBlank();
     }
 
     return 0;

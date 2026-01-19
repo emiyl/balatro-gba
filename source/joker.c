@@ -51,6 +51,7 @@ static bool _used_layers[MAX_JOKER_OBJECTS] = {false}; // Track used layers for 
 // Maps the spritesheet index to the palette bank index allocated to it.
 // Spritesheets that were not allocated are
 static int _joker_spritesheet_pb_map[(MAX_DEFINABLE_JOKERS + 1) / NUM_JOKERS_PER_SPRITESHEET];
+static u16* _joker_spritesheet_gfx_map[(MAX_DEFINABLE_JOKERS + 1) / NUM_JOKERS_PER_SPRITESHEET];
 static int _joker_pb_num_sprite_users[JOKER_LAST_PB - JOKER_BASE_PB + 1] = {0};
 
 static int s_get_num_spritesheets(void);
@@ -60,6 +61,7 @@ static void s_joker_pb_remove_sprite_user(int pb);
 static int s_joker_pb_get_num_sprite_users(int joker_pb);
 static int s_get_unused_joker_pb(void);
 static int s_allocate_pb_if_needed(u8 joker_id);
+static u16* s_allocate_gfx_if_needed(u8 joker_id);
 
 void joker_init()
 {
@@ -69,6 +71,7 @@ void joker_init()
     for (int i = 0; i < num_spritesheets; i++)
     {
         _joker_spritesheet_pb_map[i] = UNDEFINED;
+        _joker_spritesheet_gfx_map[i] = NULL;
     }
 }
 
@@ -147,23 +150,30 @@ JokerObject* joker_object_new(Joker* joker)
 
     int joker_spritesheet_idx = s_joker_get_spritesheet_idx(joker->id);
     int joker_idx = joker->id % NUM_JOKERS_PER_SPRITESHEET;
+    u16* joker_gfx = s_allocate_gfx_if_needed(joker->id);
     int joker_pb = s_allocate_pb_if_needed(joker->id);
     s_joker_pb_add_sprite_user(joker_pb);
 
-    memcpy32(
-        &tile_mem[TILE_MEM_OBJ_CHARBLOCK0_IDX][tile_index],
-        &joker_gfxTiles[joker_spritesheet_idx][joker_idx * TILE_SIZE * JOKER_SPRITE_OFFSET],
+    int joker_tile_offset = joker_idx * TILE_SIZE * JOKER_SPRITE_OFFSET;
+    dmaCopy(
+        &joker_gfxTiles[joker_spritesheet_idx][joker_tile_offset],
+        joker_gfx,
         TILE_SIZE * JOKER_SPRITE_OFFSET
     );
 
     sprite_object_set_sprite(
         joker_object->sprite_object,
         sprite_new(
-            ATTR0_SQUARE | ATTR0_4BPP | ATTR0_AFF,
-            ATTR1_SIZE_32,
+            JOKER_STARTING_LAYER + layer,
+            &oamMain,
+            0,
+            0,
+            SpriteSize_32x32,
+            SpriteColorFormat_16Color,
             tile_index,
+            true,
             joker_pb,
-            JOKER_STARTING_LAYER + layer
+            joker_gfx
         )
     );
 
@@ -183,6 +193,7 @@ void joker_object_destroy(JokerObject** joker_object)
     {
         _joker_spritesheet_pb_map[s_joker_get_spritesheet_idx((*joker_object)->joker->id)] =
             UNDEFINED;
+        _joker_spritesheet_gfx_map[s_joker_get_spritesheet_idx((*joker_object)->joker->id)] = NULL;
     }
 
     sprite_object_destroy(&(*joker_object)->sprite_object); // Destroy the sprite
@@ -393,6 +404,21 @@ static int s_get_unused_joker_pb()
     return UNDEFINED;
 }
 
+u16* s_allocate_gfx_if_needed(u8 joker_id)
+{
+    int joker_spritesheet_idx = s_joker_get_spritesheet_idx(joker_id);
+    u16* joker_gfx = _joker_spritesheet_gfx_map[joker_spritesheet_idx];
+    if (joker_gfx)
+    {
+        // Already allocated
+        return joker_gfx;
+    }
+
+    joker_gfx = oamAllocateGfx(&oamMain, SpriteSize_32x32, SpriteColorFormat_16Color);
+
+    return joker_gfx;
+}
+
 static int s_allocate_pb_if_needed(u8 joker_id)
 {
     int joker_spritesheet_idx = s_joker_get_spritesheet_idx(joker_id);
@@ -414,10 +440,10 @@ static int s_allocate_pb_if_needed(u8 joker_id)
     else
     {
         _joker_spritesheet_pb_map[joker_spritesheet_idx] = joker_pb;
-        memcpy16(
-            &pal_obj_mem[PAL_ROW_LEN * joker_pb],
+        dmaCopy(
             joker_gfxPal[joker_spritesheet_idx],
-            NUM_ELEM_IN_ARR(joker_gfx0Pal)
+            &SPRITE_PALETTE[PAL_ROW_LEN * joker_pb],
+            NUM_ELEM_IN_ARR(joker_gfx0Pal) * sizeof(u16)
         );
     }
 

@@ -4,9 +4,6 @@
 #include "util.h"
 
 #include <string.h>
-#include <tonc_core.h>
-#include <tonc_math.h>
-#include <tonc_tte.h>
 
 const Rect FULL_SCREENBLOCK_RECT = {0, 0, SE_ROW_LEN - 1, SE_COL_LEN - 1};
 
@@ -346,29 +343,29 @@ void toggle_windows(bool win0, bool win1)
 {
     if (win0)
     {
-        REG_DISPCNT |= DCNT_WIN0;
+        windowEnableSub(WINDOW_0);
     }
     else
     {
-        REG_DISPCNT &= ~DCNT_WIN0;
+        windowDisableSub(WINDOW_0);
     }
 
     if (win1)
     {
-        REG_DISPCNT |= DCNT_WIN1;
+        windowEnableSub(WINDOW_1);
     }
     else
     {
-        REG_DISPCNT &= ~DCNT_WIN1;
+        windowDisableSub(WINDOW_1);
     }
 
     if (win0 || win1)
     {
-        REG_BLDCNT = BLD_BUILD(BLD_BG1, BLD_BG2, 1);
+        REG_BLDCNT_SUB = BLEND_ALPHA | BLEND_SRC_BG1 | BLEND_DST_BG2;
     }
     else
     {
-        REG_BLDCNT = 0;
+        REG_BLDCNT_SUB = 0;
     }
 }
 

@@ -9,68 +9,72 @@
 #include <maxmod9.h>
 #include <nds.h>
 #include <stdlib.h>
-#include <tonc_oam.h>
 
-OBJ_ATTR obj_buffer[MAX_SPRITES];
-OBJ_AFFINE* obj_aff_buffer = (OBJ_AFFINE*)obj_buffer;
+static Sprite main_sprites[MAX_SPRITES];
+static Sprite sub_sprites[MAX_SPRITES];
 
-static Sprite* free_sprites[MAX_SPRITES] = {NULL};
-static bool free_affines[MAX_AFFINES] = {false};
+// Track which affine slots are in use (true = in use, false = free)
+static bool main_affine_used[MAX_AFFINES];
+static bool sub_affine_used[MAX_AFFINES];
 
 // Sprite methods
-Sprite* sprite_new(u16 a0, u16 a1, u32 tid, u32 pb, int sprite_index)
+Sprite* sprite_new(
+    int index,
+    OamState* oam,
+    int x,
+    int y,
+    SpriteSize size,
+    SpriteColorFormat color,
+    int priority,
+    bool affine,
+    int palette,
+    u16* gfx
+)
 {
-    Sprite* sprite = POOL_GET(Sprite);
+    Sprite* sprites = (oam == &oamMain) ? main_sprites : sub_sprites;
+    Sprite* s = &sprites[index];
+    s->active = true;
+    s->oam = oam;
+    s->entry.x = x;
+    s->entry.y = y;
+    s->entry.priority = priority;
+    s->entry.palette = palette;
+    s->entry.colorMode = color;
+    s->entry.isHidden = false;
 
-    sprite->obj = NULL;
-    sprite->aff = NULL;
-
-    if (!free_sprites[sprite_index])
+    switch (size)
     {
-        free_sprites[sprite_index] = sprite;
-    }
-    else
-    {
-        POOL_FREE(Sprite, sprite);
-        return NULL;
-    }
-
-    if (a0 & ATTR0_AFF)
-    {
-        int aff_index = MAX_AFFINES;
-
-        for (int i = 0; i < MAX_AFFINES; i++)
-        {
-            if (!free_affines[i])
-            {
-                free_affines[i] = true;
-                aff_index = i;
-                break;
-            }
-        }
-
-        if (aff_index == MAX_AFFINES)
-        {
-            POOL_FREE(Sprite, sprite);
-            return NULL;
-        }
-
-        a1 = a1 | ATTR1_AFF_ID(aff_index);
-
-        sprite->obj = &obj_buffer[sprite_index];
-        sprite->aff = &obj_aff_buffer[aff_index];
-        obj_set_attr(sprite->obj, a0, a1, ATTR2_PALBANK(pb) | tid);
-        obj_aff_identity(&obj_aff_buffer[aff_index]);
-    }
-    else
-    {
-        sprite->obj = &obj_buffer[sprite_index];
-        obj_set_attr(sprite->obj, a0, a1, ATTR2_PALBANK(pb) | tid);
+        case SpriteSize_8x16:
+        case SpriteSize_16x32:
+        case SpriteSize_32x64:
+            s->entry.shape = OBJSHAPE_TALL;
+            break;
+        case SpriteSize_16x8:
+        case SpriteSize_32x16:
+        case SpriteSize_64x32:
+            s->entry.shape = OBJSHAPE_WIDE;
+            break;
+        default:
+            s->entry.shape = OBJSHAPE_SQUARE;
+            break;
     }
 
-    sprite->idx = sprite_index;
+    s->entry.size = size & 0x3;
+    s->size = size;
+    s->index = index;
+    s->gfx = gfx;
+    s->affine_index = -1; // No affine by default
+    s->rotation = 0;
+    s->scale_x = 256; // 1.0x scale
+    s->scale_y = 256;
+    s->isDoubleSize = false;
 
-    return sprite;
+    if (affine)
+    {
+        sprite_enable_affine(s, false);
+    }
+
+    return s;
 }
 
 void sprite_destroy(Sprite** sprite)
@@ -78,72 +82,158 @@ void sprite_destroy(Sprite** sprite)
     if (*sprite == NULL)
         return;
 
-    obj_hide((*sprite)->obj);
+    (*sprite)->active = false;
+    sprite_hide(*sprite);
 
-    if ((*sprite)->aff != NULL)
+    SpriteEntry* entry = &(*sprite)->entry;
+    oamSet(
+        (*sprite)->oam,
+        (*sprite)->index,
+        entry->x,
+        entry->y,
+        entry->priority,
+        entry->palette,
+        (*sprite)->size,
+        entry->colorMode,
+        (*sprite)->gfx,
+        (*sprite)->affine_index, // Use affine if >= 0
+        (*sprite)->isDoubleSize,
+        entry->isHidden,
+        false,
+        false,
+        false // Not mosaic
+    );
+
+    // Free affine slot if assigned
+    if ((*sprite)->affine_index >= 0)
     {
-        free_affines[(*sprite)->aff - obj_aff_buffer] = false;
+        bool* affine_used = ((*sprite)->oam == &oamMain) ? main_affine_used : sub_affine_used;
+        affine_used[(*sprite)->affine_index] = false;
+        (*sprite)->affine_index = -1;
     }
 
-    free_sprites[(*sprite)->idx] = NULL;
+    (*sprite)->active = false;
+}
 
-    POOL_FREE(Sprite, *sprite);
+void sprite_inactive(Sprite* sprite)
+{
+    if (sprite == NULL)
+        return;
 
-    *sprite = NULL;
+    sprite->active = false;
 }
 
 int sprite_get_layer(Sprite* sprite)
 {
-    if (sprite == NULL || sprite->obj == NULL)
+    if (!sprite)
         return UNDEFINED;
-    return sprite->obj - obj_buffer;
+    return sprite->entry.priority;
 }
+
+// clang-format off
+static const u8 sprite_width_lut[3][4] = {
+    // size: 0     1      2      3
+    /* Square */ { 8,   16,    32,    64 },
+    /* Wide   */ { 16,  32,    64,     0 },
+    /* Tall   */ { 8,    8,    16,    32 },
+};
+
+static const u8 sprite_height_lut[3][4] = {
+    /* Square */ { 8,   16,    32,    64 },
+    /* Wide   */ { 8,    8,    16,    32 },
+    /* Tall   */ { 16,  32,    64,     0 },
+};
+// clang-format on
 
 bool sprite_get_width(Sprite* sprite, int* width)
 {
-    if (sprite == NULL || sprite->obj == NULL || width == NULL)
+    if (!sprite || width == NULL)
     {
         return false;
     }
 
-    *width = obj_get_width(sprite->obj);
+    *width = sprite_width_lut[sprite->entry.shape][sprite->entry.size];
     return true;
 }
 
 bool sprite_get_height(Sprite* sprite, int* height)
 {
-    if (sprite == NULL || sprite->obj == NULL || height == NULL)
+    if (!sprite || height == NULL)
     {
         return false;
     }
 
-    *height = obj_get_height(sprite->obj);
+    *height = sprite_height_lut[sprite->entry.shape][sprite->entry.size];
     return true;
 }
 
 bool sprite_get_dimensions(Sprite* sprite, int* width, int* height)
 {
-    if (sprite == NULL || sprite->obj == NULL || width == NULL || height == NULL)
+    if (!sprite || width == NULL || height == NULL)
     {
         return false;
     }
 
-    const u8* size = obj_get_size(sprite->obj);
-    *width = size[0];
-    *height = size[1];
+    *width = sprite_width_lut[sprite->entry.shape][sprite->entry.size];
+    *height = sprite_height_lut[sprite->entry.shape][sprite->entry.size];
     return true;
 }
 
 // Sprite functions
-void sprite_init()
+void sprite_init(OamState* oam)
 {
-    oam_init(obj_buffer, MAX_SPRITES);
+    for (int i = 0; i < MAX_SPRITES; i++)
+    {
+        Sprite* sprites = (oam == &oamMain) ? main_sprites : sub_sprites;
+        sprites[i].active = false;
+        sprites[i].index = i;
+    }
+
+    // Initialize affine slot tracking
+    bool* affine_used = (oam == &oamMain) ? main_affine_used : sub_affine_used;
+    for (int i = 0; i < MAX_AFFINES; i++)
+    {
+        affine_used[i] = false;
+    }
 }
 
-void sprite_draw()
+void sprite_draw(OamState* oam)
 {
-    obj_aff_copy(obj_aff_mem, obj_aff_buffer, MAX_AFFINES);
-    oam_copy(oam_mem, obj_buffer, MAX_SPRITES);
+    Sprite* sprites = (oam == &oamMain) ? main_sprites : sub_sprites;
+    for (int i = 0; i < MAX_SPRITES; i++)
+    {
+        Sprite* s = &sprites[i];
+
+        // Skip inactive sprites
+        if (!s->active)
+            continue;
+
+        SpriteEntry* entry = &s->entry;
+
+        // Update affine matrix if used
+        if (s->affine_index >= 0)
+        {
+            oamRotateScale(oam, s->affine_index, s->rotation, s->scale_x, s->scale_y);
+        }
+
+        oamSet(
+            oam,
+            s->index,
+            entry->x,
+            entry->y,
+            entry->priority,
+            entry->palette,
+            s->size,
+            entry->colorMode,
+            s->gfx,
+            s->affine_index, // Use affine if >= 0
+            s->isDoubleSize,
+            entry->isHidden,
+            false,
+            false,
+            false // Not mosaic
+        );
+    }
 }
 
 int sprite_get_pb(const Sprite* sprite)
@@ -152,13 +242,13 @@ int sprite_get_pb(const Sprite* sprite)
     {
         return UNDEFINED;
     }
-    return (sprite->obj->attr2 & ATTR2_PALBANK_MASK) >> ATTR2_PALBANK_SHIFT;
+    return sprite->entry.palette;
 }
 
 // SpriteObject methods
 SpriteObject* sprite_object_new()
 {
-    SpriteObject* sprite_object = POOL_GET(SpriteObject);
+    SpriteObject* sprite_object = malloc(sizeof(SpriteObject));
     sprite_object->sprite = NULL;
     sprite_object_reset_transform(sprite_object);
     sprite_object->focused = false;
@@ -171,7 +261,7 @@ void sprite_object_destroy(SpriteObject** sprite_object)
     if (*sprite_object == NULL)
         return;
     sprite_destroy(&(*sprite_object)->sprite);
-    POOL_FREE(SpriteObject, *sprite_object);
+    free(*sprite_object);
     *sprite_object = NULL;
 }
 
@@ -181,6 +271,84 @@ void sprite_object_set_sprite(SpriteObject* sprite_object, Sprite* sprite)
         return;
     sprite_destroy(&sprite_object->sprite); // Destroy the old sprite if it exists
     sprite_object->sprite = sprite;
+}
+
+// Affine transformation helpers
+void sprite_set_rotation(Sprite* sprite, s16 angle)
+{
+    if (sprite == NULL)
+        return;
+    sprite->rotation = angle;
+}
+
+void sprite_set_scale(Sprite* sprite, s16 scale_x, s16 scale_y)
+{
+    if (sprite == NULL)
+        return;
+    sprite->scale_x = scale_x;
+    sprite->scale_y = scale_y;
+}
+
+void sprite_set_rotscale(Sprite* sprite, s16 scale_x, s16 scale_y, s16 angle)
+{
+    if (sprite == NULL)
+        return;
+    sprite_set_scale(sprite, scale_x, scale_y);
+    sprite_set_rotation(sprite, angle);
+}
+
+void sprite_enable_affine(Sprite* sprite, bool double_size)
+{
+    if (sprite == NULL)
+        return;
+
+    // Allocate affine slot if not already assigned
+    if (sprite->affine_index < 0)
+    {
+        bool* affine_used = (sprite->oam == &oamMain) ? main_affine_used : sub_affine_used;
+
+        // Find first free affine slot
+        for (int i = 0; i < MAX_AFFINES; i++)
+        {
+            if (!affine_used[i])
+            {
+                sprite->affine_index = i;
+                affine_used[i] = true;
+                break;
+            }
+        }
+
+        // If no slot available, affine_index stays -1 (no affine)
+        if (sprite->affine_index < 0)
+        {
+            // Could log warning: no affine slots available
+            return;
+        }
+    }
+
+    // Set double size attribute if requested
+    if (double_size)
+    {
+        sprite->isDoubleSize = true;
+    }
+}
+
+void sprite_disable_affine(Sprite* sprite)
+{
+    if (sprite == NULL)
+        return;
+
+    // Free affine slot if assigned
+    if (sprite->affine_index >= 0)
+    {
+        bool* affine_used = (sprite->oam == &oamMain) ? main_affine_used : sub_affine_used;
+        affine_used[sprite->affine_index] = false;
+    }
+
+    sprite->affine_index = -1;
+    sprite->rotation = 0;
+    sprite->scale_x = 256;
+    sprite->scale_y = 256;
 }
 
 void sprite_object_reset_transform(SpriteObject* sprite_object)
@@ -256,13 +424,14 @@ void sprite_object_update(SpriteObject* sprite_object)
     }
 
     // Apply rotation and scale to the sprite
-    obj_aff_rotscale(
-        sprite_object->sprite->aff,
+
+    sprite_set_rotscale(
+        sprite_object->sprite,
         sprite_object->scale,
         sprite_object->scale,
         -sprite_object->vx + sprite_object->rotation
     );
-    sprite_position(sprite_object->sprite, fx2int(sprite_object->x), fx2int(sprite_object->y));
+    sprite_position(sprite_object->sprite, sprite_object->x, sprite_object->y);
 }
 
 void sprite_object_shake(SpriteObject* sprite_object, mm_word sound_id)
@@ -332,4 +501,30 @@ bool sprite_object_get_dimensions(SpriteObject* sprite_object, int* width, int* 
 bool sprite_object_is_focused(SpriteObject* sprite_object)
 {
     return sprite_object->focused;
+}
+
+void sprite_position(Sprite* sprite, int x, int y)
+{
+    sprite->entry.x = x;
+    sprite->entry.y = y;
+}
+
+void sprite_entry_hide(SpriteEntry* sprite)
+{
+    sprite->isHidden = true;
+}
+
+void sprite_hide(Sprite* sprite)
+{
+    sprite_entry_hide(&sprite->entry);
+}
+
+void sprite_entry_unhide(SpriteEntry* sprite)
+{
+    sprite->isHidden = false;
+}
+
+void sprite_unhide(Sprite* sprite)
+{
+    sprite_entry_unhide(&sprite->entry);
 }

@@ -56,9 +56,11 @@ enum BlindState
 typedef struct
 {
     const unsigned int* tiles;
+    u32 tilesLen;
     const u16* palette;
-    u32 tid;
-    u32 pb;
+    u16 tid;
+    u8 pb;
+    u16* vram_addr;
 } BlindGfxInfo;
 
 typedef struct
@@ -77,6 +79,6 @@ u32 blind_get_requirement(enum BlindType type, int ante);
 int blind_get_reward(enum BlindType type);
 u16 blind_get_color(enum BlindType type, enum BlindColorIndex index);
 
-Sprite* blind_token_new(enum BlindType type, int x, int y, int sprite_index);
+Sprite* blind_token_new(enum BlindType type, int x, int y, int oam_index);
 
 #endif // BLIND_H

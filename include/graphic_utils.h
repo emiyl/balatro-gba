@@ -15,6 +15,8 @@
 #ifndef GRAPHIC_UTILS_H
 #define GRAPHIC_UTILS_H
 
+#include "nds_compat.h"
+
 /**
  * @name Graphics Utilities Constants
  *
@@ -115,7 +117,7 @@
 #define TEXT_CLR_RED RGB15(31, 9, 8) // 0x213F
 
 /** @def TEXT_CLR_WHITE */
-#define TEXT_CLR_WHITE CLR_WHITE
+#define TEXT_CLR_WHITE RGB15(31, 31, 31) // 0x7FFF
 
 /** @} */
 

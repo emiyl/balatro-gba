@@ -15,8 +15,6 @@
 
 #include <nds.h>
 #include <stdint.h>
-#include <tonc_math.h>
-#include <tonc_memdef.h>
 
 #define MAIN_MENU_BUTTONS             2
 #define MAIN_MENU_IMPLEMENTED_BUTTONS 1 // Remove this once all buttons are implemented
@@ -44,8 +42,7 @@ void game_main_menu_on_init(void* _)
     change_background(BG_MAIN_MENU);
     main_menu_ace = card_object_new(card_new(SPADES, ACE));
     card_object_set_sprite(main_menu_ace, 0); // Set the sprite for the ace of spades
-    main_menu_ace->sprite_object->sprite->obj->attr0 |=
-        ATTR0_AFF_DBL; // Make the sprite double sized
+    main_menu_ace->sprite_object->sprite->isDoubleSize = true;
     main_menu_ace->sprite_object->tx = int2fx(MAIN_MENU_ACE_T_X);
     main_menu_ace->sprite_object->x = main_menu_ace->sprite_object->tx;
     main_menu_ace->sprite_object->ty = int2fx(MAIN_MENU_ACE_T_Y);
@@ -54,19 +51,21 @@ void game_main_menu_on_init(void* _)
     selection_x = 0;
 }
 
+extern int bg_1;
 void game_main_menu_change_background(void)
 {
     toggle_windows(false, false);
 
     tte_erase_screen();
-    GRIT_CPY(pal_bg_mem, background_main_menu_gfxPal);
-    GRIT_CPY(&tile_mem[MAIN_BG_CBB], background_main_menu_gfxTiles);
-    GRIT_CPY(&se_mem[MAIN_BG_SBB], background_main_menu_gfxMap);
+
+    dmaCopy(background_main_menu_gfxPal, BG_PALETTE, background_main_menu_gfxPalLen);
+    dmaCopy(background_main_menu_gfxTiles, bgGetGfxPtr(bg_1), background_main_menu_gfxTilesLen);
+    dmaCopy(background_main_menu_gfxMap, bgGetMapPtr(bg_1), background_main_menu_gfxMapLen);
 
     // Disable the button highlight colors
     memcpy16(
-        &pal_bg_mem[MAIN_MENU_PLAY_BUTTON_OUTLINE_PID],
-        &pal_bg_mem[MAIN_MENU_PLAY_BUTTON_MAIN_COLOR_PID],
+        &BG_PALETTE[MAIN_MENU_PLAY_BUTTON_OUTLINE_PID],
+        &BG_PALETTE[MAIN_MENU_PLAY_BUTTON_MAIN_COLOR_PID],
         1
     );
 }
@@ -78,7 +77,7 @@ void game_main_menu_on_update(void* ctx)
     change_background(BG_MAIN_MENU);
 
     card_object_update(main_menu_ace);
-    main_menu_ace->sprite_object->trotation = lu_sin((props->timer << 8) / 2) / 3;
+    main_menu_ace->sprite_object->trotation = sinLerp((props->timer << 8) / 2) / 3;
     main_menu_ace->sprite_object->rotation = main_menu_ace->sprite_object->trotation;
 
     // Seed randomization
@@ -106,7 +105,7 @@ void game_main_menu_on_update(void* ctx)
 
     if (selection_x == MAIN_MENU_PLAY_BTN_IDX)
     {
-        memset16(&pal_bg_mem[MAIN_MENU_PLAY_BUTTON_OUTLINE_PID], BTN_HIGHLIGHT_COLOR, 1);
+        memset16(&BG_PALETTE[MAIN_MENU_PLAY_BUTTON_OUTLINE_PID], BTN_HIGHLIGHT_COLOR, 1);
 
         if (key_hit(SELECT_CARD))
         {
@@ -117,8 +116,8 @@ void game_main_menu_on_update(void* ctx)
     else
     {
         memcpy16(
-            &pal_bg_mem[MAIN_MENU_PLAY_BUTTON_OUTLINE_PID],
-            &pal_bg_mem[MAIN_MENU_PLAY_BUTTON_MAIN_COLOR_PID],
+            &BG_PALETTE[MAIN_MENU_PLAY_BUTTON_OUTLINE_PID],
+            &BG_PALETTE[MAIN_MENU_PLAY_BUTTON_MAIN_COLOR_PID],
             1
         );
     }

@@ -22,10 +22,9 @@
 #include "sprite.h"
 #include "util.h"
 
+#include <nds.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <nds.h>
-#include <tonc_memdef.h>
 
 // Sound pitch steps for SFX
 #define PITCH_STEP_DISCARD_SFX   (-64)
@@ -2112,6 +2111,7 @@ void game_playing_change_background(enum BackgroundId current_background)
     tte_erase_rect_wrapper(HAND_SIZE_RECT_SELECT);
 }
 
+extern int bg_1;
 void game_selecting_change_background(enum BackgroundId current_background)
 {
     tte_erase_rect_wrapper(HAND_SIZE_RECT_PLAYING);
@@ -2121,7 +2121,7 @@ void game_selecting_change_background(enum BackgroundId current_background)
     {
         int offset = 11;
         memcpy16(
-            &se_mem[MAIN_BG_SBB][SE_ROW_LEN * offset],
+            &BG_MAP_RAM(MAIN_BG_SBB)[SE_ROW_LEN * offset],
             &background_gfxMap[SE_ROW_LEN * offset],
             SE_ROW_LEN * 8
         );
@@ -2132,9 +2132,9 @@ void game_selecting_change_background(enum BackgroundId current_background)
 
         // Load the tiles and palette
         // Background
-        GRIT_CPY(pal_bg_mem, background_gfxPal);
-        GRIT_CPY(&tile8_mem[MAIN_BG_CBB], background_gfxTiles);
-        GRIT_CPY(&se_mem[MAIN_BG_SBB], background_gfxMap);
+        dmaCopy(background_gfxPal, BG_PALETTE, background_gfxPalLen);
+        dmaCopy(background_gfxTiles, bgGetGfxPtr(bg_1), background_gfxTilesLen);
+        dmaCopy(background_gfxMap, bgGetMapPtr(bg_1), background_gfxMapLen);
 
         int current_blind = get_current_blind();
 
@@ -2154,17 +2154,17 @@ void game_selecting_change_background(enum BackgroundId current_background)
         // This would change the palette of the background to match the blind, but the backgroun
         // doesn't use the blind token's exact colors so a different approach is required
         memset16(
-            &pal_bg_mem[BLIND_BG_PRIMARY_PID],
+            &BG_PALETTE[BLIND_BG_PRIMARY_PID],
             blind_get_color(current_blind, BLIND_BACKGROUND_MAIN_COLOR_INDEX),
             1
         );
         memset16(
-            &pal_bg_mem[BLIND_BG_SECONDARY_PID],
+            &BG_PALETTE[BLIND_BG_SECONDARY_PID],
             blind_get_color(current_blind, BLIND_BACKGROUND_SECONDARY_COLOR_INDEX),
             1
         );
         memset16(
-            &pal_bg_mem[BLIND_BG_SHADOW_PID],
+            &BG_PALETTE[BLIND_BG_SHADOW_PID],
             blind_get_color(current_blind, BLIND_BACKGROUND_SHADOW_COLOR_INDEX),
             1
         );
