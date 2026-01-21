@@ -135,14 +135,10 @@ void selection_grid_process_input(SelectionGrid* selection_grid, void* ctx)
 
     selection_grid_process_directional_input(selection_grid, ctx);
 
-    u32 non_directional_key = KEY_ANY & ~KEY_DIR;
-    if (key_transit(non_directional_key))
+    // Call on_key_transit every frame so callbacks can check key_hit/key_released
+    Selection* selection = &selection_grid->selection;
+    if (selection->y >= 0 && selection->y < selection_grid->num_rows)
     {
-        // To make the next line shorter and more readable
-        Selection* selection = &selection_grid->selection;
-        if (selection->y >= 0 && selection->y < selection_grid->num_rows)
-        {
-            selection_grid->rows[selection->y].on_key_transit(selection_grid, selection, ctx);
-        }
+        selection_grid->rows[selection->y].on_key_transit(selection_grid, selection, ctx);
     }
 }
